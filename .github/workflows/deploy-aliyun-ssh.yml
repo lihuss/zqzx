@@ -34,10 +34,15 @@ jobs:
         npm ci
         npm run build --if-present
 
-    - name: Start ssh-agent and add private key
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Install ssh client
+      run: sudo apt-get update -y && sudo apt-get install -y openssh-client
+
+    - name: Write SSH private key
+      run: |
+        mkdir -p ~/.ssh
+        printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      shell: bash
 
     - name: Ensure known_hosts has the server
       run: |
