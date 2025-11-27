@@ -79,6 +79,6 @@ jobs:
         cd "${TARGET_DIR}"
         # 如果你在服务器上放了 ./restart.sh，会自动执行它
         if [ -x ./restart.sh ]; then
-          ./restart.sh
+          sh ./restart.sh
         fi
         EOF
