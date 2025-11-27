@@ -77,5 +77,6 @@ jobs:
         ssh -p ${SERVER_PORT:-22} ${SERVER_USER}@${SERVER_HOST} "bash -s" << 'EOF'
         set -e
         cd "${TARGET_DIR}"
-        sh ./restart.sh > log.txt
+        echo "${TARGET_DIR}" > log.txt
+        sh $TARGET_DIR/restart.sh > log.txt
         EOF
