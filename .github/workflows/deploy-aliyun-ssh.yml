@@ -76,7 +76,5 @@ jobs:
       run: |
         ssh -p ${SERVER_PORT:-22} ${SERVER_USER}@${SERVER_HOST} "bash -s" << 'EOF'
         set -e
-        cd "${TARGET_DIR}"
-        echo "$PWD" > /var/www/zqzx/log.txt
-        sh ./restart.sh
+        sh ${TARGET_DIR}/restart.sh > ${TARGET_DIR}/log.txt
         EOF
