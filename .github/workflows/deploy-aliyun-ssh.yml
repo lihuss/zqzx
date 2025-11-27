@@ -1,0 +1,84 @@
+name: Deploy to Alibaba Cloud Server (SSH)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Build and deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Detect package.json
+      id: detect
+      run: |
+        if [ -f package.json ]; then
+          echo "found=true" >> $GITHUB_OUTPUT
+        else
+          echo "found=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set up Node.js (optional)
+      if: ${{ steps.detect.outputs.found == 'true' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies and build (optional)
+      if: ${{ steps.detect.outputs.found == 'true' }}
+      run: |
+        npm ci
+        npm run build --if-present
+
+    - name: Install ssh client
+      run: sudo apt-get update -y && sudo apt-get install -y openssh-client
+
+    - name: Write SSH private key
+      run: |
+        mkdir -p ~/.ssh
+        printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      shell: bash
+
+    - name: Ensure known_hosts has the server
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -p ${SERVER_PORT:-22} -H ${SERVER_HOST} >> ~/.ssh/known_hosts
+      env:
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        SERVER_PORT: ${{ secrets.SERVER_PORT }}
+
+    - name: Install rsync
+      run: sudo apt-get update -y && sudo apt-get install -y rsync
+
+    - name: Rsync files to server
+      env:
+        TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      run: |
+        # 如果你只想同步构建输出（如 dist/），把 SRC 设置为 ./dist/
+        SRC=./
+        echo "Syncing $SRC -> ${SERVER_USER}@${SERVER_HOST}:${TARGET_DIR}"
+        rsync -avz --delete -e "ssh -p ${SERVER_PORT:-22}" $SRC ${SERVER_USER}@${SERVER_HOST}:${TARGET_DIR}
+
+    - name: Run remote commands (restart service)
+      env:
+        TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      run: |
+        ssh -p ${SERVER_PORT:-22} ${SERVER_USER}@${SERVER_HOST} "bash -s" << 'EOF'
+        set -e
+        cd "${TARGET_DIR}"
+        # 如果你在服务器上放了 ./restart.sh，会自动执行它
+        if [ -x ./restart.sh ]; then
+          ./restart.sh
+        fi
+        EOF
