@@ -382,12 +382,17 @@ app.get('/class/:id', requireAuth, async (req, res) => {
             `, [post.id]);
             post.comments = comments;
 
-            // 检查当前用户是否已点赞
-            const [likeCheck] = await db.query(
-                'SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?',
-                [post.id, req.session.userId]
-            );
-            post.userLiked = likeCheck.length > 0;
+            // 检查当前用户是否已点赞（表可能不存在）
+            try {
+                const [likeCheck] = await db.query(
+                    'SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?',
+                    [post.id, req.session.userId]
+                );
+                post.userLiked = likeCheck.length > 0;
+            } catch (likeErr) {
+                // 如果 post_likes 表不存在，默认未点赞
+                post.userLiked = false;
+            }
         }
 
         res.render('class', { currentClass, posts, moment });
