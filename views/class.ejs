@@ -10,6 +10,53 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* 修复顶部导航遮挡问题 */
+        body {
+            padding-top: 70px;
+        }
+
+        .glass-nav {
+            height: 60px;
+            z-index: 1030;
+        }
+
+        /* 发帖区域样式优化 */
+        .post-form-card {
+            position: sticky;
+            top: 80px;
+            z-index: 10;
+        }
+
+        /* 匿名ID样式 */
+        .anon-id {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .anon-id-poster {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .anon-id-commenter {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        /* 评论区优化 */
+        .comment-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
 
 <body class="app-page">
@@ -43,109 +90,170 @@
                     </ul>
                 </div>
                 <% } else { %>
-                    <img src="/images/mascot.jpg" class="rounded-circle" width="35" height="35"
-                        style="object-fit:cover;">
+                    <span></span>
                     <% } %>
         </div>
     </nav>
 
-    <div class="container" style="margin-top: 80px;">
+    <div class="container py-4">
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="glass-card p-3 sticky-top" style="top: 90px; z-index: 1;">
-                    <h5 class="mb-3">📝 写下回忆</h5>
+            <!-- 左侧发帖区 -->
+            <div class="col-lg-4 col-md-5 mb-4">
+                <div class="glass-card p-4 post-form-card">
+                    <h5 class="mb-3"><i class="fas fa-pen-fancy text-success me-2"></i>写下回忆</h5>
                     <form action="/class/<%= currentClass.id %>/post" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
-                            <textarea name="content" class="form-control" rows="4" placeholder="今天发生了什么有趣的事..."
-                                required></textarea>
+                            <textarea name="content" class="form-control" rows="5"
+                                placeholder="今天发生了什么有趣的事...&#10;分享给同学们吧！" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-muted small">上传照片 (可选)</label>
+                            <label class="form-label text-muted small">
+                                <i class="fas fa-image me-1"></i>上传照片 (可选)
+                            </label>
                             <input type="file" name="image" class="form-control form-control-sm" accept="image/*">
                         </div>
-                        <button type="submit" class="btn btn-success w-100">发布</button>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-paper-plane me-2"></i>发布
+                        </button>
                     </form>
+
+                    <div class="mt-4 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            评论区采用匿名ID，每个帖子内相同颜色的ID代表同一发言者
+                        </small>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-8">
-                <% posts.forEach(post=> { %>
-                    <div class="glass-card mb-4 p-0 overflow-hidden">
-                        <div class="p-3 border-bottom border-light">
-                            <div class="d-flex align-items-center">
-                                <div class="rounded-circle bg-success d-flex align-items-center justify-content-center me-2"
-                                    style="width: 40px; height: 40px; color: white; font-weight: bold;">
-                                    <%= post.author_name ? post.author_name.charAt(0).toUpperCase() : '?' %>
-                                </div>
-                                <div>
-                                    <div class="fw-bold">
-                                        <%= post.author_name || '匿名用户' %>
-                                    </div>
-                                    <small class="text-muted">
-                                        <%= moment(post.created_at).format('YYYY-MM-DD HH:mm') %>
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-3">
-                            <p class="card-text mb-3" style="white-space: pre-wrap;">
-                                <%= post.content %>
-                            </p>
-                            <% if(post.image) { %>
-                                <img src="<%= post.image %>" class="img-fluid rounded mb-3 w-100"
-                                    style="max-height: 500px; object-fit: cover;">
-                                <% } %>
-                        </div>
-
-                        <div
-                            class="bg-light bg-opacity-50 p-2 d-flex justify-content-between align-items-center border-top border-light">
-                            <div>
-                                <form action="/post/<%= post.id %>/like" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-sm text-danger"><i class="far fa-heart"></i>
-                                        <%= post.likes %>
-                                    </button>
-                                </form>
-                                <span class="text-muted small ms-2"><i class="far fa-comment"></i>
-                                    <%= post.comments.length %>
-                                </span>
-                            </div>
-                            <form action="/post/<%= post.id %>/report" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-sm text-muted small">⚠️ 举报</button>
-                            </form>
-                        </div>
-
-                        <% if(post.comments.length> 0) { %>
-                            <div class="p-3 bg-white bg-opacity-25 border-top border-light">
-                                <% post.comments.forEach(c=> { %>
-                                    <div class="mb-1 small">
-                                        <span class="fw-bold text-success">
-                                            <%= c.author_name || '同学' %>:
-                                        </span>
-                                        <%= c.content %>
-                                    </div>
-                                    <% }) %>
-                            </div>
-                            <% } %>
-
-                                <div class="p-2 border-top border-light">
-                                    <form action="/post/<%= post.id %>/comment" method="POST"
-                                        class="input-group input-group-sm">
-                                        <input type="text" name="commentContent" class="form-control border-0 bg-light"
-                                            placeholder="评论一句..." required>
-                                        <button class="btn btn-outline-secondary" type="submit">发送</button>
-                                    </form>
-                                </div>
+            <!-- 右侧帖子流 -->
+            <div class="col-lg-8 col-md-7">
+                <% if(posts.length===0) { %>
+                    <div class="glass-card p-5 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <h5>还没有帖子</h5>
+                        <p>快来写下第一条回忆吧！</p>
                     </div>
-                    <% }) %>
+                    <% } %>
 
-                        <% if(posts.length===0) { %>
-                            <div class="glass-card p-5 text-center text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <h5>还没有帖子</h5>
-                                <p>快来写下第一条回忆吧！</p>
+                        <% posts.forEach(post=> {
+                            // 为这个帖子生成用户ID映射
+                            const userIdMap = {};
+                            let idCounter = 1;
+                            const getAnonId = (userId) => {
+                            if (!userId) return '匿名';
+                            if (!userIdMap[userId]) {
+                            userIdMap[userId] = idCounter++;
+                            }
+                            return '路人' + String.fromCharCode(64 + userIdMap[userId]); // 路人A, 路人B...
+                            };
+                            // 帖子作者固定为"楼主"
+                            const posterUserId = post.user_id;
+                            %>
+                            <div class="glass-card mb-4 p-0 overflow-hidden">
+                                <!-- 帖子头部 -->
+                                <div class="p-3 border-bottom border-light">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center me-2"
+                                                style="width: 42px; height: 42px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold;">
+                                                楼
+                                            </div>
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="fw-bold">楼主</span>
+                                                    <span class="anon-id anon-id-poster">
+                                                        <%= post.author_name || '匿名' %>
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <%= moment(post.created_at).format('MM-DD HH:mm') %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 帖子内容 -->
+                                <div class="p-3">
+                                    <p class="card-text mb-0" style="white-space: pre-wrap; line-height: 1.7;">
+                                        <%= post.content %>
+                                    </p>
+                                </div>
+
+                                <% if(post.image) { %>
+                                    <div class="px-3 pb-3">
+                                        <img src="<%= post.image %>" class="img-fluid rounded w-100"
+                                            style="max-height: 500px; object-fit: cover; cursor: pointer;"
+                                            onclick="window.open(this.src)">
+                                    </div>
+                                    <% } %>
+
+                                        <!-- 操作栏 -->
+                                        <div
+                                            class="bg-light bg-opacity-50 px-3 py-2 d-flex justify-content-between align-items-center border-top border-light">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <form action="/post/<%= post.id %>/like" method="POST" class="d-inline">
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-link text-danger p-0 text-decoration-none">
+                                                        <i class="far fa-heart"></i>
+                                                        <%= post.likes %>
+                                                    </button>
+                                                </form>
+                                                <span class="text-muted small">
+                                                    <i class="far fa-comment"></i>
+                                                    <%= post.comments.length %>
+                                                </span>
+                                            </div>
+                                            <form action="/post/<%= post.id %>/report" method="POST" class="d-inline">
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-link text-muted p-0 text-decoration-none small">
+                                                    <i class="fas fa-flag"></i> 举报
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <!-- 评论区 -->
+                                        <% if(post.comments.length> 0) { %>
+                                            <div class="p-3 bg-white bg-opacity-50 border-top border-light">
+                                                <div class="small text-muted mb-2">
+                                                    <i class="fas fa-comments me-1"></i>评论 (<%= post.comments.length %>)
+                                                </div>
+                                                <% post.comments.forEach((c, index)=> {
+                                                    const isOP = c.user_id && c.user_id === posterUserId;
+                                                    const displayId = isOP ? '楼主' : getAnonId(c.user_id);
+                                                    %>
+                                                    <div class="comment-item">
+                                                        <div class="d-flex align-items-start gap-2">
+                                                            <span
+                                                                class="anon-id <%= isOP ? 'anon-id-poster' : 'anon-id-commenter' %>">
+                                                                <%= displayId %>
+                                                            </span>
+                                                            <div class="flex-grow-1">
+                                                                <span class="small">
+                                                                    <%= c.content %>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                            </div>
+                                            <% } %>
+
+                                                <!-- 评论输入框 -->
+                                                <div class="p-2 border-top border-light">
+                                                    <form action="/post/<%= post.id %>/comment" method="POST"
+                                                        class="d-flex gap-2">
+                                                        <input type="text" name="commentContent"
+                                                            class="form-control form-control-sm border-0 bg-light"
+                                                            placeholder="写下你的评论..." required>
+                                                        <button class="btn btn-sm btn-success px-3" type="submit">
+                                                            <i class="fas fa-paper-plane"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                             </div>
-                            <% } %>
+                            <% }) %>
             </div>
         </div>
     </div>

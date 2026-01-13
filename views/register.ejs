@@ -134,22 +134,21 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="form-floating">
-                                    <select class="form-select" id="campus" name="campus" required>
-                                        <option value="">请选择</option>
-                                        <option value="主校区">主校区</option>
-                                        <option value="大旺校区">大旺校区</option>
-                                    </select>
-                                    <label for="campus">校区</label>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="schoolType" name="schoolType" required>
+                                    <select class="form-select" id="schoolType" name="schoolType" required
+                                        onchange="updateCampusOptions()">
                                         <option value="">请选择</option>
                                         <option value="初中">初中</option>
                                         <option value="高中">高中</option>
                                     </select>
                                     <label for="schoolType">初/高中</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="campus" name="campus" required>
+                                        <option value="">先选初/高中</option>
+                                    </select>
+                                    <label for="campus">校区</label>
                                 </div>
                             </div>
                         </div>
@@ -194,6 +193,32 @@
     </div>
 
     <script>
+        // 根据初/高中选择更新校区选项
+        function updateCampusOptions() {
+            const schoolType = document.getElementById('schoolType').value;
+            const campusSelect = document.getElementById('campus');
+
+            // 清空现有选项
+            campusSelect.innerHTML = '';
+
+            if (!schoolType) {
+                campusSelect.innerHTML = '<option value="">先选初/高中</option>';
+                return;
+            }
+
+            if (schoolType === '高中') {
+                // 高中只有一个校区
+                campusSelect.innerHTML = '<option value="高中部">高中部（主校区）</option>';
+            } else if (schoolType === '初中') {
+                // 初中有两个校区
+                campusSelect.innerHTML = `
+                    <option value="">请选择校区</option>
+                    <option value="信安校区">信安校区</option>
+                    <option value="府城校区">府城校区</option>
+                `;
+            }
+        }
+
         // 密码确认验证
         document.querySelector('form').addEventListener('submit', function (e) {
             const pwd = document.getElementById('password').value;

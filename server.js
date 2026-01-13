@@ -57,15 +57,34 @@ function requireAdmin(req, res, next) {
 }
 
 // 配置图片上传
+// 生产环境：使用项目外的独立目录（不会被部署覆盖）
+// 开发环境：使用项目内的 public/uploads
+const UPLOADS_DIR = process.env.UPLOADS_DIR || (
+    process.env.NODE_ENV === 'production'
+        ? '/var/www/zqzx-uploads'  // 服务器上的独立目录
+        : path.join(__dirname, 'public/uploads')  // 本地开发
+);
+
+// 确保上传目录存在
+const fs = require('fs');
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
+        cb(null, UPLOADS_DIR);
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 const upload = multer({ storage: storage });
+
+// 生产环境需要单独挂载 uploads 目录的静态服务
+if (process.env.NODE_ENV === 'production') {
+    app.use('/uploads', express.static(UPLOADS_DIR));
+}
 
 // --- 认证路由 ---
 
@@ -176,14 +195,39 @@ app.get('/my-codes', requireAuth, async (req, res) => {
 
 // --- 管理员路由 ---
 
+// 获取管理面板数据
+async function getAdminData() {
+    const systemCodes = await auth.getSystemInviteCodes();
+
+    // 获取班级列表及帖子数
+    const [classes] = await db.query(`
+        SELECT c.*, COUNT(p.id) as post_count 
+        FROM classes c 
+        LEFT JOIN posts p ON c.id = p.class_id 
+        GROUP BY c.id 
+        ORDER BY c.created_at DESC
+    `);
+
+    // 获取举报列表
+    const [reports] = await db.query(`
+        SELECT r.*, p.content as post_content, p.class_id, u.username as reporter_name
+        FROM reports r
+        LEFT JOIN posts p ON r.post_id = p.id
+        LEFT JOIN users u ON r.reporter_id = u.id
+        ORDER BY r.created_at DESC
+    `);
+
+    return { systemCodes, classes, reports };
+}
+
 // 管理面板
 app.get('/admin', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const systemCodes = await auth.getSystemInviteCodes();
-        res.render('admin', { user: res.locals.user, systemCodes, newCodes: null });
+        const data = await getAdminData();
+        res.render('admin', { user: res.locals.user, ...data, newCodes: null });
     } catch (err) {
-        console.error('获取系统邀请码失败:', err);
-        res.render('admin', { user: res.locals.user, systemCodes: [], newCodes: null });
+        console.error('获取管理数据失败:', err);
+        res.render('admin', { user: res.locals.user, systemCodes: [], classes: [], reports: [], newCodes: null });
     }
 });
 
@@ -198,10 +242,75 @@ app.post('/admin/generate-code', requireAuth, requireAdmin, async (req, res) => 
             newCodes.push(code);
         }
 
-        const systemCodes = await auth.getSystemInviteCodes();
-        res.render('admin', { user: res.locals.user, systemCodes, newCodes });
+        const data = await getAdminData();
+        res.render('admin', { user: res.locals.user, ...data, newCodes });
     } catch (err) {
         console.error('生成邀请码失败:', err);
+        res.redirect('/admin');
+    }
+});
+
+// 创建班级（管理员）
+app.post('/admin/create-class', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const { year, className } = req.body;
+        const fullName = `${year}届 ${className.trim()}`;
+
+        const [existing] = await db.query('SELECT * FROM classes WHERE full_name = ?', [fullName]);
+        if (existing.length === 0) {
+            await db.query('INSERT INTO classes (name, full_name) VALUES (?, ?)', [className.trim(), fullName]);
+        }
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('创建班级失败:', err);
+        res.redirect('/admin');
+    }
+});
+
+// 删除班级（管理员）
+app.post('/admin/delete-class/:id', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const classId = req.params.id;
+        // 删除关联的评论、帖子，然后删除班级
+        await db.query('DELETE FROM comments WHERE post_id IN (SELECT id FROM posts WHERE class_id = ?)', [classId]);
+        await db.query('DELETE FROM posts WHERE class_id = ?', [classId]);
+        await db.query('DELETE FROM classes WHERE id = ?', [classId]);
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('删除班级失败:', err);
+        res.redirect('/admin');
+    }
+});
+
+// 处理举报 - 删除帖子
+app.post('/admin/report/:id/delete-post', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const reportId = req.params.id;
+
+        // 获取举报信息
+        const [reports] = await db.query('SELECT * FROM reports WHERE id = ?', [reportId]);
+        if (reports.length > 0) {
+            const postId = reports[0].post_id;
+            // 删除帖子及其评论
+            await db.query('DELETE FROM comments WHERE post_id = ?', [postId]);
+            await db.query('DELETE FROM posts WHERE id = ?', [postId]);
+            // 更新举报状态
+            await db.query('UPDATE reports SET status = "resolved", resolved_at = NOW() WHERE id = ?', [reportId]);
+        }
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('处理举报失败:', err);
+        res.redirect('/admin');
+    }
+});
+
+// 处理举报 - 驳回
+app.post('/admin/report/:id/dismiss', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        await db.query('UPDATE reports SET status = "dismissed", resolved_at = NOW() WHERE id = ?', [req.params.id]);
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('驳回举报失败:', err);
         res.redirect('/admin');
     }
 });
@@ -333,10 +442,30 @@ app.post('/post/:id/comment', requireAuth, async (req, res) => {
     }
 });
 
-// 举报
-app.post('/post/:id/report', requireAuth, (req, res) => {
-    console.log(`帖子 ${req.params.id} 被举报，举报者: ${req.session.userId}`);
-    res.send("<script>alert('举报成功，管理员会尽快处理。'); history.back();</script>");
+// 举报（保存到数据库）
+app.post('/post/:id/report', requireAuth, async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const reporterId = req.session.userId;
+
+        // 检查是否已举报过
+        const [existing] = await db.query(
+            'SELECT * FROM reports WHERE post_id = ? AND reporter_id = ? AND status = "pending"',
+            [postId, reporterId]
+        );
+
+        if (existing.length === 0) {
+            await db.query(
+                'INSERT INTO reports (post_id, reporter_id) VALUES (?, ?)',
+                [postId, reporterId]
+            );
+        }
+
+        res.send("<script>alert('举报成功，管理员会尽快处理。'); history.back();</script>");
+    } catch (err) {
+        console.error('举报失败:', err);
+        res.send("<script>alert('举报失败，请稍后重试。'); history.back();</script>");
+    }
 });
 
 app.listen(PORT, () => {

@@ -42,3 +42,16 @@ ALTER TABLE comments ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SE
 -- 初始邀请码（可由管理员在数据库中手动添加）
 -- 示例：INSERT INTO invite_codes (code) VALUES ('ZQZX2025ADMIN01');
 -- =====================================================
+
+-- 举报表
+CREATE TABLE IF NOT EXISTS reports (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    reporter_id INT,
+    reason VARCHAR(255),
+    status ENUM('pending', 'resolved', 'dismissed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP NULL,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE SET NULL
+);
