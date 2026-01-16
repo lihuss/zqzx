@@ -65,7 +65,12 @@ jobs:
         # 如果你只想同步构建输出（如 dist/），把 SRC 设置为 ./dist/
         SRC=./
         echo "Syncing $SRC -> ${SERVER_USER}@${SERVER_HOST}:${TARGET_DIR}"
-        rsync -avz --delete -e "ssh -p ${SERVER_PORT:-22}" $SRC ${SERVER_USER}@${SERVER_HOST}:${TARGET_DIR}
+        # --exclude 避免覆盖服务器上已有的上传文件
+        rsync -avz --delete \
+          --exclude 'public/uploads/' \
+          --exclude 'node_modules/' \
+          -e "ssh -p ${SERVER_PORT:-22}" \
+          $SRC ${SERVER_USER}@${SERVER_HOST}:${TARGET_DIR}
 
     - name: Run remote commands (restart service)
       env:
@@ -73,9 +78,20 @@ jobs:
         SERVER_USER: ${{ secrets.SERVER_USER }}
         SERVER_HOST: ${{ secrets.SERVER_HOST }}
         SERVER_PORT: ${{ secrets.SERVER_PORT }}
+        UPLOADS_DIR: /var/www/zqzx-uploads
       run: |
         ssh -p ${SERVER_PORT:-22} ${SERVER_USER}@${SERVER_HOST} "bash -s" << EOF
         set -e
         cd ${TARGET_DIR}
-        pm2 restart server.js || pm2 start server.js
+        
+        # 确保上传目录存在
+        mkdir -p ${UPLOADS_DIR}
+        
+        # 安装依赖
+        npm install --production
+        
+        # 使用 ecosystem.config.js 启动，带生产环境变量
+        pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+        
+        pm2 save
         EOF

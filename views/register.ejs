@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 肇中2025届回忆录</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label,
+        .form-floating>.form-select:focus~label,
+        .form-floating>.form-select:not([value=""])~label {
+            color: #11998e;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #11998e;
+            box-shadow: 0 0 0 0.2rem rgba(17, 153, 142, 0.25);
+        }
+
+        .btn-auth {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .invite-input {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <img src="/images/logo.png" alt="肇中校徽" class="auth-logo mb-3">
+                <h3 class="fw-bold">加入回忆录</h3>
+                <p class="text-muted">填写邀请码和个人信息完成注册</p>
+            </div>
+
+            <% if (typeof error !=='undefined' && error) { %>
+                <div class="alert alert-danger py-2 mb-3">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <form action="/register" method="POST">
+                        <!-- 邀请码 -->
+                        <div class="section-title">📨 邀请码</div>
+                        <div class="form-floating mb-4">
+                            <input type="text" class="form-control invite-input" id="inviteCode" name="inviteCode"
+                                placeholder="邀请码" required maxlength="16"
+                                value="<%= typeof inviteCode !== 'undefined' ? inviteCode : '' %>">
+                            <label for="inviteCode">请输入12位邀请码</label>
+                        </div>
+
+                        <!-- 账号信息 -->
+                        <div class="section-title">🔐 账号信息</div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="username" name="username" placeholder="用户名"
+                                required minlength="2" maxlength="20"
+                                value="<%= typeof formData !== 'undefined' && formData.username ? formData.username : '' %>">
+                            <label for="username">用户名（2-20字符）</label>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password" name="password"
+                                        placeholder="密码" required minlength="6">
+                                    <label for="password">密码</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="confirmPassword"
+                                        name="confirmPassword" placeholder="确认密码" required>
+                                    <label for="confirmPassword">确认密码</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 学校信息 -->
+                        <div class="section-title">🏫 学校信息</div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="schoolType" name="schoolType" required
+                                        onchange="updateCampusOptions()">
+                                        <option value="">请选择</option>
+                                        <option value="初中">初中</option>
+                                        <option value="高中">高中</option>
+                                    </select>
+                                    <label for="schoolType">初/高中</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="campus" name="campus" required>
+                                        <option value="">先选初/高中</option>
+                                    </select>
+                                    <label for="campus">校区</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="graduationYear" name="graduationYear" required>
+                                        <option value="">请选择</option>
+                                        <option value="2025" selected>2025届</option>
+                                        <option value="2024">2024届</option>
+                                        <option value="2023">2023届</option>
+                                        <option value="2026">2026届</option>
+                                    </select>
+                                    <label for="graduationYear">届</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="className" name="className"
+                                        placeholder="班级" required
+                                        value="<%= typeof formData !== 'undefined' && formData.className ? formData.className : '' %>">
+                                    <label for="className">班级（如：高三15班）</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-auth w-100 mb-3">
+                            🎉 完成注册
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-muted text-center mb-0">
+                        已有账号？
+                        <a href="/login" class="text-decoration-none fw-bold" style="color: #11998e;">
+                            立即登录
+                        </a>
+                    </p>
+        </div>
+    </div>
+
+    <script>
+        // 根据初/高中选择更新校区选项
+        function updateCampusOptions() {
+            const schoolType = document.getElementById('schoolType').value;
+            const campusSelect = document.getElementById('campus');
+
+            // 清空现有选项
+            campusSelect.innerHTML = '';
+
+            if (!schoolType) {
+                campusSelect.innerHTML = '<option value="">先选初/高中</option>';
+                return;
+            }
+
+            if (schoolType === '高中') {
+                // 高中只有一个校区
+                campusSelect.innerHTML = '<option value="高中部">高中部（主校区）</option>';
+            } else if (schoolType === '初中') {
+                // 初中有两个校区
+                campusSelect.innerHTML = `
+                    <option value="">请选择校区</option>
+                    <option value="信安校区">信安校区</option>
+                    <option value="府城校区">府城校区</option>
+                `;
+            }
+        }
+
+        // 密码确认验证
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const pwd = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            if (pwd !== confirm) {
+                e.preventDefault();
+                alert('两次输入的密码不一致！');
+            }
+        });
+    </script>
+</body>
+
+</html>

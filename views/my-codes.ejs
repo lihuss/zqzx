@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的邀请码 - 肇中2025</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .code-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-card.used {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            opacity: 0.7;
+        }
+
+        .code-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        }
+
+        .invite-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.available {
+            background: rgba(56, 239, 125, 0.3);
+            color: #38ef7d;
+        }
+
+        .status-badge.used {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+
+<body class="app-page">
+    <nav class="glass-nav fixed-top p-3 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/hall" class="btn btn-sm btn-outline-success"><i class="fas fa-arrow-left"></i> 返回大厅</a>
+            <span class="fw-bold fs-5 text-success-dark">我的邀请码</span>
+            <span></span>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 80px; max-width: 600px;">
+        <div class="glass-card p-4 mb-4">
+            <div class="text-center mb-4">
+                <i class="fas fa-gift fa-3x text-success mb-3"></i>
+                <h4 class="fw-bold">邀请好友加入回忆录</h4>
+                <p class="text-muted">每位同学注册后将获得3个专属邀请码，分享给你的同学吧！</p>
+            </div>
+
+            <% if (codes.length===0) { %>
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p>暂无邀请码</p>
+                </div>
+                <% } else { %>
+                    <% codes.forEach((code, index)=> { %>
+                        <div class="code-card <%= code.used_by ? 'used' : '' %>">
+                            <span class="status-badge <%= code.used_by ? 'used' : 'available' %>">
+                                <%= code.used_by ? '已使用' : '可使用' %>
+                            </span>
+
+                            <div class="mb-2">
+                                <small class="opacity-75">邀请码 #<%= index + 1 %></small>
+                            </div>
+
+                            <div class="invite-code mb-3" id="code-<%= code.id %>">
+                                <%= code.code %>
+                            </div>
+
+                            <% if (code.used_by) { %>
+                                <div class="small opacity-75">
+                                    <i class="fas fa-user-check me-1"></i>
+                                    已被 <strong>
+                                        <%= code.used_by_username %>
+                                    </strong> 使用
+                                </div>
+                                <% } else { %>
+                                    <button class="copy-btn" onclick="copyCode('<%= code.code %>')">
+                                        <i class="fas fa-copy me-1"></i> 复制
+                                    </button>
+                                    <% } %>
+                        </div>
+                        <% }) %>
+                            <% } %>
+        </div>
+
+        <div class="glass-card p-4 text-center">
+            <h6 class="text-muted mb-3">📊 邀请统计</h6>
+            <div class="row">
+                <div class="col-6">
+                    <div class="h3 fw-bold text-success">
+                        <%= codes.filter(c=> !c.used_by).length %>
+                    </div>
+                    <small class="text-muted">可用邀请码</small>
+                </div>
+                <div class="col-6">
+                    <div class="h3 fw-bold text-primary">
+                        <%= codes.filter(c=> c.used_by).length %>
+                    </div>
+                    <small class="text-muted">已邀请好友</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('邀请码已复制到剪贴板！\n' + code);
+            }).catch(() => {
+                prompt('请手动复制邀请码：', code);
+            });
+        }
+    </script>
+</body>
+
+</html>

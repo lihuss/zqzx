@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理面板 - 肇中2025</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-card {
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+
+        .admin-card:hover {
+            transform: translateX(5px);
+        }
+
+        .admin-card.invite {
+            border-color: #ffc107;
+        }
+
+        .admin-card.class {
+            border-color: #198754;
+        }
+
+        .admin-card.report {
+            border-color: #dc3545;
+        }
+
+        .tab-content {
+            padding-top: 20px;
+        }
+
+        .report-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body class="app-page">
+    <nav class="glass-nav fixed-top p-3 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/hall" class="btn btn-sm btn-outline-success"><i class="fas fa-arrow-left"></i> 返回大厅</a>
+            <span class="fw-bold fs-5 text-danger">🔒 管理面板</span>
+            <span class="badge bg-danger">管理员</span>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; max-width: 900px;">
+        <% if (!user || !user.is_admin) { %>
+            <div class="alert alert-danger text-center">
+                <i class="fas fa-ban fa-2x mb-2"></i>
+                <h5>无权访问</h5>
+                <p>此页面仅限管理员使用</p>
+                <a href="/hall" class="btn btn-outline-danger">返回大厅</a>
+            </div>
+            <% } else { %>
+                <!-- 标签页导航 -->
+                <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="invite-tab" data-bs-toggle="tab" data-bs-target="#invite"
+                            type="button">
+                            <i class="fas fa-key text-warning me-1"></i> 邀请码管理
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="class-tab" data-bs-toggle="tab" data-bs-target="#class"
+                            type="button">
+                            <i class="fas fa-school text-success me-1"></i> 班级管理
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#report"
+                            type="button">
+                            <i class="fas fa-flag text-danger me-1"></i> 举报处理
+                            <% if (typeof reports !=='undefined' && reports.filter(r=> r.status === 'pending').length >
+                                0) { %>
+                                <span class="badge bg-danger">
+                                    <%= reports.filter(r=> r.status === 'pending').length %>
+                                </span>
+                                <% } %>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="adminTabContent">
+                    <!-- 邀请码管理 -->
+                    <div class="tab-pane fade show active" id="invite" role="tabpanel">
+                        <div class="glass-card p-4 mb-4 admin-card invite">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-warning me-2"></i>生成系统邀请码</h5>
+                            <form action="/admin/generate-code" method="POST" class="row g-3 align-items-center">
+                                <div class="col-auto">
+                                    <label class="form-label mb-0">生成数量：</label>
+                                </div>
+                                <div class="col-auto">
+                                    <select name="count" class="form-select">
+                                        <option value="1">1个</option>
+                                        <option value="3">3个</option>
+                                        <option value="5">5个</option>
+                                        <option value="10">10个</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-magic me-1"></i> 生成
+                                    </button>
+                                </div>
+                            </form>
+
+                            <% if (typeof newCodes !=='undefined' && newCodes && newCodes.length> 0) { %>
+                                <div class="alert alert-success mt-4 mb-0">
+                                    <strong>✅ 生成成功！</strong>
+                                    <div class="mt-2">
+                                        <% newCodes.forEach(code=> { %>
+                                            <code class="d-block fs-5 mb-1"><%= code %></code>
+                                            <% }) %>
+                                    </div>
+                                </div>
+                                <% } %>
+                        </div>
+
+                        <div class="glass-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-list text-info me-2"></i>系统邀请码列表</h5>
+                            <% if (systemCodes.length===0) { %>
+                                <p class="text-muted text-center mb-0">暂无系统邀请码</p>
+                                <% } else { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>邀请码</th>
+                                                    <th>状态</th>
+                                                    <th>使用者</th>
+                                                    <th>创建时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% systemCodes.forEach(code=> { %>
+                                                    <tr class="<%= code.used_by ? 'table-secondary' : '' %>">
+                                                        <td><code><%= code.code %></code></td>
+                                                        <td>
+                                                            <span
+                                                                class="badge <%= code.used_by ? 'bg-secondary' : 'bg-success' %>">
+                                                                <%= code.used_by ? '已使用' : '可用' %>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <%= code.used_by_username || '-' %>
+                                                        </td>
+                                                        <td>
+                                                            <%= new Date(code.created_at).toLocaleDateString('zh-CN') %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </div>
+                    </div>
+
+                    <!-- 班级管理 -->
+                    <div class="tab-pane fade" id="class" role="tabpanel">
+                        <div class="glass-card p-4 mb-4 admin-card class">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-success me-2"></i>创建新班级</h5>
+                            <form action="/admin/create-class" method="POST" class="row g-3 align-items-end">
+                                <div class="col-auto">
+                                    <label class="form-label">届</label>
+                                    <select name="year" class="form-select">
+                                        <option value="2025" selected>2025届</option>
+                                        <option value="2024">2024届</option>
+                                        <option value="2026">2026届</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">班级名称</label>
+                                    <input type="text" name="className" class="form-control" placeholder="如：高三(15)班"
+                                        required>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus me-1"></i> 创建班级
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="glass-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-school text-info me-2"></i>班级列表</h5>
+                            <% if (typeof classes !=='undefined' && classes.length> 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>班级名称</th>
+                                                <th>帖子数</th>
+                                                <th>创建时间</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% classes.forEach(cls=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= cls.id %>
+                                                    </td>
+                                                    <td>
+                                                        <%= cls.full_name %>
+                                                    </td>
+                                                    <td>
+                                                        <%= cls.post_count || 0 %>
+                                                    </td>
+                                                    <td>
+                                                        <%= new Date(cls.created_at).toLocaleDateString('zh-CN') %>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/class/<%= cls.id %>"
+                                                            class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form action="/admin/delete-class/<%= cls.id %>" method="POST"
+                                                            class="d-inline"
+                                                            onsubmit="return confirm('确定要删除该班级吗？此操作不可恢复！')">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } else { %>
+                                    <p class="text-muted text-center mb-0">暂无班级</p>
+                                    <% } %>
+                        </div>
+                    </div>
+
+                    <!-- 举报处理 -->
+                    <div class="tab-pane fade" id="report" role="tabpanel">
+                        <div class="glass-card p-4 admin-card report">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-flag text-danger me-2"></i>待处理举报</h5>
+
+                            <% if (typeof reports==='undefined' || reports.filter(r=> r.status === 'pending').length ===
+                                0) { %>
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <p>暂无待处理的举报</p>
+                                </div>
+                                <% } else { %>
+                                    <% reports.filter(r=> r.status === 'pending').forEach(report => { %>
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <span class="badge bg-warning text-dark">待处理</span>
+                                                        <small class="text-muted ms-2">
+                                                            <%= new Date(report.created_at).toLocaleString('zh-CN') %>
+                                                        </small>
+                                                    </div>
+                                                    <small class="text-muted">举报人: <%= report.reporter_name || '匿名' %>
+                                                            </small>
+                                                </div>
+
+                                                <div class="report-preview">
+                                                    <strong>被举报帖子内容：</strong>
+                                                    <p class="mb-0 mt-1">
+                                                        <%= report.post_content ? report.post_content.substring(0, 200)
+                                                            + (report.post_content.length> 200 ? '...' : '') : '帖子已删除'
+                                                            %>
+                                                    </p>
+                                                </div>
+
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <a href="/class/<%= report.class_id %>"
+                                                        class="btn btn-sm btn-outline-primary" target="_blank">
+                                                        <i class="fas fa-eye me-1"></i>查看帖子
+                                                    </a>
+                                                    <form action="/admin/report/<%= report.id %>/delete-post"
+                                                        method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                            onclick="return confirm('确定删除该帖子吗？')">
+                                                            <i class="fas fa-trash me-1"></i>删除帖子
+                                                        </button>
+                                                    </form>
+                                                    <form action="/admin/report/<%= report.id %>/dismiss" method="POST"
+                                                        class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                                            <i class="fas fa-times me-1"></i>驳回举报
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                            <% } %>
+                        </div>
+
+                        <% if (typeof reports !=='undefined' && reports.filter(r=> r.status !== 'pending').length > 0) {
+                            %>
+                            <div class="glass-card p-4 mt-4">
+                                <h6 class="text-muted mb-3">历史记录</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm small">
+                                        <thead>
+                                            <tr>
+                                                <th>时间</th>
+                                                <th>状态</th>
+                                                <th>帖子ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% reports.filter(r=> r.status !== 'pending').slice(0, 10).forEach(r => { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= new Date(r.created_at).toLocaleDateString('zh-CN') %>
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            class="badge <%= r.status === 'resolved' ? 'bg-success' : 'bg-secondary' %>">
+                                                            <%= r.status==='resolved' ? '已处理' : '已驳回' %>
+                                                        </span>
+                                                    </td>
+                                                    <td>#<%= r.post_id %>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+                <% } %>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
