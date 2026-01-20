@@ -7,8 +7,8 @@
     <title>
         <%= currentClass.full_name %> - 回忆录
     </title>
-    <link href="https://cdn.staticfile.org/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.staticfile.org/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
         body {
@@ -202,8 +202,8 @@
                                     <% if (post.image) { %>
                                         <div class="px-3 pb-3">
                                             <img src="<%= post.image %>" class="img-fluid rounded w-100"
-                                                style="max-height: 500px; object-fit: cover; cursor: pointer;"
-                                                onclick="window.open(this.src)">
+                                                style="height: 300px; object-fit: cover; cursor: pointer;"
+                                                onclick="openImage(this.src)">
                                         </div>
                                         <% } %>
 
@@ -272,8 +272,54 @@
         </div>
     </div>
 
-    <script src="https://cdn.staticfile.org/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+
+         // 新功能：在新窗口打开适应屏幕的图片
+        function openImage(src) {
+            // 打开一个空白的新窗口
+            var newWin = window.open("", "_blank");
+            
+            // 如果成功拦截到窗口（微信等部分环境可能有限制，但在点击事件中通常是允许的）
+            if (newWin) {
+                newWin.document.write(`
+                    <!DOCTYPE html>
+                    <html style="height:100%; margin:0;">
+                    <head>
+                        <meta charset="UTF-8">
+                        <!-- 关键：设置视口适配移动端屏幕 -->
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+                        <title>图片查看</title>
+                        <style>
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                height: 100vh;
+                                background-color: #000; /* 黑色背景更像看图模式 */
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                            }
+                            img {
+                                max-width: 100%;  /* 宽度最大100%，防止撑破屏幕 */
+                                max-height: 100%; /* 高度最大100%，防止太长 */
+                                object-fit: contain; /* 保持图片比例 */
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${src}" alt="图片">
+                    </body>
+                    </html>
+                `);
+                newWin.document.close(); // 完成写入，让浏览器开始渲染
+            } else {
+                // 如果被拦截，降级处理：直接导航（虽然可能没那么完美，但能看）
+                window.location.href = src;
+            }
+        }
+
+
         async function toggleLike(btn) {
             var postId = btn.dataset.postId;
             try {

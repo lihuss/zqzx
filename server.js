@@ -13,6 +13,12 @@ const PORT = process.env.PORT || 3000;
 // 配置中间件
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
+
+// ------------------- 请添加以下两行代码 -------------------
+app.use('/lib/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
+app.use('/lib/fontawesome', express.static(path.join(__dirname, 'node_modules/@fortawesome/fontawesome-free')));
+// --------------------------------------------------------
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // 配置 Session（Cookie 保持登录30天）
