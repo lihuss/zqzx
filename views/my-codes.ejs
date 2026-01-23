@@ -338,11 +338,45 @@
 
     <script>
         function copyCode(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                alert('邀请码已复制到剪贴板！\n' + code);
-            }).catch(() => {
-                prompt('请手动复制邀请码：', code);
-            });
+            // 优先尝试现代 API (需要 HTTPS 或 localhost)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('邀请码已复制到剪贴板！\n' + code);
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                // 降级处理：使用传统文本框选复制方法
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // 确保不可见
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    alert('邀请码已复制到剪贴板！\n' + text);
+                } else {
+                    prompt('请手动复制邀请码：', text);
+                }
+            } catch (err) {
+                prompt('请手动复制邀请码：', text);
+            }
+
+            document.body.removeChild(textArea);
         }
     </script>
 </body>
