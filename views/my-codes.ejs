@@ -7,21 +7,127 @@
     <title>我的邀请码 - 肇中2025</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
     <style>
-        .code-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            color: white;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
+        :root {
+            --primary: #f59e0b;
+            --cork: #d97706;
+            --warm-bg: #fcfaf7;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #f1f5f9;
         }
 
-        .code-card.used {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            opacity: 0.7;
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--warm-bg);
+            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-top: 70px;
+        }
+
+        /* 顶部导航 */
+        .warm-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-warm-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-warm-outline:hover {
+            border-color: var(--cork);
+            color: var(--cork);
+            background: #fef3c7;
+        }
+
+        .nav-title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            color: var(--cork);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 主卡片 */
+        .main-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cork), #f59e0b, #fbbf24);
+            border-radius: 1.5rem 1.5rem 0 0;
+        }
+
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cork);
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 邀请码卡片 */
+        .code-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 1rem;
+            color: white;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .code-card::before {
@@ -31,7 +137,38 @@
             right: -50%;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        }
+
+        .code-card.used {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+            opacity: 0.8;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-badge.available {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .status-badge.used {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .code-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 0.25rem;
         }
 
         .invite-code {
@@ -39,14 +176,20 @@
             font-size: 1.5rem;
             letter-spacing: 3px;
             font-weight: bold;
+            margin-bottom: 0.75rem;
         }
 
         .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
+            padding: 0.375rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -55,48 +198,91 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .used-info {
+            font-size: 0.8rem;
+            opacity: 0.85;
         }
 
-        .status-badge.available {
-            background: rgba(56, 239, 125, 0.3);
-            color: #38ef7d;
+        /* 统计卡片 */
+        .stats-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
-        .status-badge.used {
-            background: rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.8);
+        .stats-title {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .stat-number.available {
+            color: var(--cork);
+        }
+
+        .stat-number.used {
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
     </style>
 </head>
 
-<body class="app-page">
-    <nav class="glass-nav fixed-top p-3 shadow-sm">
+<body>
+    <nav class="warm-nav">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="/hall" class="btn btn-sm btn-outline-success"><i class="fas fa-arrow-left"></i> 返回大厅</a>
-            <span class="fw-bold fs-5 text-success-dark">我的邀请码</span>
+            <a href="/hall" class="btn-warm-outline">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回大厅</span>
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-gift"></i>
+                <span>我的邀请码</span>
+            </div>
             <span></span>
         </div>
     </nav>
 
-    <div class="container" style="margin-top: 80px; max-width: 600px;">
-        <div class="glass-card p-4 mb-4">
+    <div class="container" style="max-width: 600px;">
+        <div class="main-card">
             <div class="text-center mb-4">
-                <i class="fas fa-gift fa-3x text-success mb-3"></i>
-                <h4 class="fw-bold">邀请好友加入回忆录</h4>
-                <p class="text-muted">每位同学注册后将获得3个专属邀请码，分享给你的同学吧！</p>
+                <div class="header-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h4 class="header-title">邀请好友加入回忆录</h4>
+                <p class="header-desc">每位同学注册后将获得3个专属邀请码，分享给你的同学吧！</p>
             </div>
 
             <% if (codes.length===0) { %>
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
                     <p>暂无邀请码</p>
                 </div>
                 <% } else { %>
@@ -105,17 +291,13 @@
                             <span class="status-badge <%= code.used_by ? 'used' : 'available' %>">
                                 <%= code.used_by ? '已使用' : '可使用' %>
                             </span>
-
-                            <div class="mb-2">
-                                <small class="opacity-75">邀请码 #<%= index + 1 %></small>
+                            <div class="code-label">邀请码 #<%= index + 1 %>
                             </div>
-
-                            <div class="invite-code mb-3" id="code-<%= code.id %>">
+                            <div class="invite-code">
                                 <%= code.code %>
                             </div>
-
                             <% if (code.used_by) { %>
-                                <div class="small opacity-75">
+                                <div class="used-info">
                                     <i class="fas fa-user-check me-1"></i>
                                     已被 <strong>
                                         <%= code.used_by_username %>
@@ -123,7 +305,7 @@
                                 </div>
                                 <% } else { %>
                                     <button class="copy-btn" onclick="copyCode('<%= code.code %>')">
-                                        <i class="fas fa-copy me-1"></i> 复制
+                                        <i class="fas fa-copy"></i> 复制
                                     </button>
                                     <% } %>
                         </div>
@@ -131,20 +313,24 @@
                             <% } %>
         </div>
 
-        <div class="glass-card p-4 text-center">
-            <h6 class="text-muted mb-3">📊 邀请统计</h6>
+        <div class="stats-card">
+            <div class="stats-title">📊 邀请统计</div>
             <div class="row">
                 <div class="col-6">
-                    <div class="h3 fw-bold text-success">
-                        <%= codes.filter(c=> !c.used_by).length %>
+                    <div class="stat-item">
+                        <div class="stat-number available">
+                            <%= codes.filter(c=> !c.used_by).length %>
+                        </div>
+                        <div class="stat-label">可用邀请码</div>
                     </div>
-                    <small class="text-muted">可用邀请码</small>
                 </div>
                 <div class="col-6">
-                    <div class="h3 fw-bold text-primary">
-                        <%= codes.filter(c=> c.used_by).length %>
+                    <div class="stat-item">
+                        <div class="stat-number used">
+                            <%= codes.filter(c=> c.used_by).length %>
+                        </div>
+                        <div class="stat-label">已邀请好友</div>
                     </div>
-                    <small class="text-muted">已邀请好友</small>
                 </div>
             </div>
         </div>
