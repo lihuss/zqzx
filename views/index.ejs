@@ -1,19 +1,221 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>广东肇庆中学2025届回忆录</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --cork: #d97706;
+            --warm-bg: #fcfaf7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 50%, #fdba74 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 木纹纹理叠加 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.03) 0px, rgba(217, 119, 6, 0.03) 2px, transparent 2px, transparent 4px);
+            pointer-events: none;
+        }
+
+        /* 装饰性图形 */
+        .decoration-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .decoration-circle.c1 {
+            width: 400px;
+            height: 400px;
+            background: var(--cork);
+            top: -100px;
+            right: -100px;
+        }
+
+        .decoration-circle.c2 {
+            width: 300px;
+            height: 300px;
+            background: #ef4444;
+            bottom: -50px;
+            left: -50px;
+        }
+
+        .decoration-circle.c3 {
+            width: 200px;
+            height: 200px;
+            background: #3b82f6;
+            top: 50%;
+            left: 10%;
+        }
+
+        .main-card {
+            position: relative;
+            z-index: 10;
+            background: white;
+            border-radius: 2rem;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 480px;
+            margin: 1rem;
+        }
+
+        /* 图钉装饰 */
+        .pin {
+            position: absolute;
+            top: -10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .pin.left {
+            left: 30px;
+            background: radial-gradient(circle at 30% 30%, #f87171, #b91c1c);
+        }
+
+        .pin.right {
+            right: 30px;
+            background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8);
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .school-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--cork);
+            margin-bottom: 2rem;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .enter-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2.5rem;
+            background: var(--cork);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+        }
+
+        .enter-btn:hover {
+            background: #b45309;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+            color: white;
+        }
+
+        .enter-btn i {
+            transition: transform 0.3s;
+        }
+
+        .enter-btn:hover i {
+            transform: translateX(4px);
+        }
+
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-card {
+            animation: fadeInUp 0.8s ease-out;
+        }
+    </style>
 </head>
-<body class="cover-page">
-    <div class="overlay"></div>
-    <div class="content-center text-center text-white fade-in">
-        <img src="/images/logo.png" alt="肇中校徽" class="mb-4 logo-large">
-        <h1 class="display-3 fw-bold mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">广东肇庆中学</h1>
-        <h2 class="h1 mb-5" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">2025届 高中毕业纪念</h2>
-        <a href="/hall" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold shadow">开启回忆之旅</a>
+
+<body>
+    <!-- 装饰圆形 -->
+    <div class="decoration-circle c1"></div>
+    <div class="decoration-circle c2"></div>
+    <div class="decoration-circle c3"></div>
+
+    <div class="main-card">
+        <div class="pin left"></div>
+        <div class="pin right"></div>
+
+        <img src="/images/logo.png" alt="肇中校徽" class="logo">
+        <h1 class="school-name">广东肇庆中学</h1>
+        <p class="subtitle">2025届 · 高中毕业纪念</p>
+        <p class="description">
+            时光荏苒，三年青春转瞬即逝。<br>
+            在这里，记录我们共同的回忆，<br>
+            珍藏那些难忘的瞬间。
+        </p>
+        <a href="/hall" class="enter-btn">
+            <span>开启回忆之旅</span>
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <p class="footer-text">© 2025 广东肇庆中学 · 用心铭记</p>
     </div>
 </body>
+
 </html>

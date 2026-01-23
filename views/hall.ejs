@@ -7,38 +7,252 @@
     <title>班级大厅 - 肇中2025</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --cork: #d97706;
+            --warm-bg: #fcfaf7;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #f1f5f9;
+        }
+
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--warm-bg);
+            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-top: 70px;
+        }
+
+        /* 顶部导航 */
+        .warm-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .nav-brand img {
+            height: 36px;
+        }
+
+        .nav-brand-text {
+            font-size: 1.125rem;
+            font-weight: 800;
+            color: var(--cork);
+        }
+
+        .btn-warm-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-warm-outline:hover {
+            border-color: var(--cork);
+            color: var(--cork);
+            background: #fef3c7;
+        }
+
+        /* 头部区域 */
+        .hall-header {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .hall-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cork), #f59e0b, #fbbf24);
+        }
+
+        .hall-header img {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .hall-header h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hall-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* 班级卡片 */
+        .class-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #f87171, #b91c1c);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .class-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+        }
+
+        .class-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .class-card h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .class-card small {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* 下拉菜单 */
+        .dropdown-menu {
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .dropdown-item:hover {
+            background: #fef3c7;
+        }
+
+        .dropdown-item i {
+            width: 1.25rem;
+        }
+
+        /* 页脚 */
+        .hall-footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+    </style>
 </head>
 
-<body class="app-page">
+<body>
     <!-- 顶部导航栏 -->
-    <nav class="glass-nav fixed-top p-3 shadow-sm">
+    <nav class="warm-nav">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="/" class="text-decoration-none">
-                <img src="/images/logo.png" height="35" class="me-2">
-                <span class="fw-bold text-success-dark d-none d-md-inline">肇中2025</span>
+            <a href="/" class="nav-brand">
+                <img src="/images/logo.png" alt="校徽">
+                <span class="nav-brand-text d-none d-md-inline">肇中2025</span>
             </a>
 
             <div class="d-flex align-items-center gap-3">
                 <% if (user) { %>
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>
-                            <%= user.username %>
+                        <button class="btn-warm-outline dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="d-none d-sm-inline">
+                                <%= user.username %>
+                            </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><span class="dropdown-item-text text-muted small">
+                            <li>
+                                <span class="dropdown-item-text text-muted small">
                                     <%= user.campus %> · <%= user.school_type %> · <%= user.graduation_year %>届<br>
                                                 <%= user.class_name %>
-                                </span></li>
+                                </span>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="/my-codes"><i class="fas fa-gift me-2"></i>我的邀请码</a></li>
+                            <li>
+                                <a class="dropdown-item" href="/my-codes">
+                                    <i class="fas fa-gift text-warning"></i> 我的邀请码
+                                </a>
+                            </li>
                             <% if (user.is_admin) { %>
-                                <li><a class="dropdown-item text-danger" href="/admin"><i
-                                            class="fas fa-cog me-2"></i>管理面板</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="/admin">
+                                        <i class="fas fa-cog text-danger"></i> 管理面板
+                                    </a>
+                                </li>
                                 <% } %>
                                     <li>
                                         <hr class="dropdown-divider">
@@ -46,7 +260,7 @@
                                     <li>
                                         <form action="/logout" method="POST" class="d-inline">
                                             <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                                                <i class="fas fa-sign-out-alt"></i> 退出登录
                                             </button>
                                         </form>
                                     </li>
@@ -57,33 +271,43 @@
         </div>
     </nav>
 
-    <div class="container py-5" style="margin-top: 60px;">
-        <div class="glass-header text-center mb-5 p-4 rounded-4">
-            <img src="/images/logo.png" height="60" class="mb-3">
-            <h2 class="fw-bold text-success-dark">2025届 班级大厅</h2>
-            <p class="text-secondary">找到属于你的集体，留下青春的足迹</p>
+    <div class="container py-4">
+        <!-- 头部区域 -->
+        <div class="hall-header">
+            <img src="/images/logo.png" alt="校徽">
+            <h2>2025届 · 班级大厅</h2>
+            <p>找到属于你的集体，留下青春的足迹</p>
         </div>
 
+        <!-- 班级列表 -->
         <div class="row g-4">
-            <% classes.forEach(cls=> { %>
+            <% classes.forEach((cls, index)=> { %>
                 <div class="col-6 col-md-4 col-lg-3">
                     <a href="/class/<%= cls.id %>" class="text-decoration-none">
-                        <div class="glass-card class-card text-center p-4 h-100">
-                            <div class="icon mb-2">🏫</div>
-                            <h5 class="fw-bold text-dark">
+                        <div class="class-card">
+                            <div class="class-icon">🏫</div>
+                            <h5>
                                 <%= cls.full_name %>
                             </h5>
-                            <small class="text-muted">点击进入</small>
+                            <small>点击进入 →</small>
                         </div>
                     </a>
                 </div>
                 <% }) %>
-                    <% if(classes.length===0) { %>
-                        <div class="col-12 text-center text-muted py-5">
-                            <i class="fas fa-school fa-3x mb-3 opacity-50"></i>
-                            <p>暂无班级，请联系管理员开通</p>
+
+                    <% if (classes.length===0) { %>
+                        <div class="col-12">
+                            <div class="empty-state">
+                                <i class="fas fa-school"></i>
+                                <p>暂无班级，请联系管理员开通</p>
+                            </div>
                         </div>
                         <% } %>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="hall-footer">
+            <p>© 2025 广东肇庆中学 · 用心铭记每一刻</p>
         </div>
     </div>
 

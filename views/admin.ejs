@@ -7,61 +7,355 @@
     <title>管理面板 - 肇中2025</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
     <style>
+        :root {
+            --primary: #f59e0b;
+            --cork: #d97706;
+            --warm-bg: #fcfaf7;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #f1f5f9;
+        }
+
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--warm-bg);
+            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-top: 70px;
+        }
+
+        /* 顶部导航 */
+        .warm-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-warm-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-warm-outline:hover {
+            border-color: var(--cork);
+            color: var(--cork);
+            background: #fef3c7;
+        }
+
+        .admin-title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* 卡片样式 */
         .admin-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
             border-left: 4px solid;
             transition: transform 0.2s;
         }
 
         .admin-card:hover {
-            transform: translateX(5px);
+            transform: translateX(4px);
         }
 
         .admin-card.invite {
-            border-color: #ffc107;
+            border-color: #f59e0b;
         }
 
         .admin-card.class {
-            border-color: #198754;
+            border-color: #10b981;
         }
 
         .admin-card.report {
-            border-color: #dc3545;
+            border-color: #ef4444;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .card-title i {
+            font-size: 1.1rem;
+        }
+
+        /* 表单样式 */
+        .form-control,
+        .form-select {
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-light);
+            padding: 0.5rem 1rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        /* 按钮样式 */
+        .btn-warm {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.75rem;
+            border: none;
+            background: var(--cork);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-warm:hover {
+            background: #b45309;
+        }
+
+        .btn-warm.yellow {
+            background: #f59e0b;
+        }
+
+        .btn-warm.yellow:hover {
+            background: #d97706;
+        }
+
+        .btn-warm.green {
+            background: #10b981;
+        }
+
+        .btn-warm.green:hover {
+            background: #059669;
+        }
+
+        .btn-warm.red {
+            background: #ef4444;
+        }
+
+        .btn-warm.red:hover {
+            background: #dc2626;
+        }
+
+        /* 标签页 */
+        .nav-tabs {
+            border-bottom: 2px solid var(--border-light);
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0.75rem 0.75rem 0 0;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--cork);
+            background: #fef3c7;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--cork);
+            background: white;
+            border-bottom: 2px solid var(--cork);
+            margin-bottom: -2px;
         }
 
         .tab-content {
-            padding-top: 20px;
+            padding-top: 1.5rem;
+        }
+
+        /* 表格 */
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table td {
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        /* 徽章 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-badge.available {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-badge.used {
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.resolved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-badge.dismissed {
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        /* 举报卡片 */
+        .report-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-light);
         }
 
         .report-preview {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 0.9rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.75rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* 成功消息 */
+        .success-msg {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .success-msg code {
+            display: block;
+            font-size: 1.1rem;
+            color: #059669;
+            margin-top: 0.5rem;
+        }
+
+        /* 无权限 */
+        .no-access {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .no-access i {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 
-<body class="app-page">
-    <nav class="glass-nav fixed-top p-3 shadow-sm">
+<body>
+    <nav class="warm-nav">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="/hall" class="btn btn-sm btn-outline-success"><i class="fas fa-arrow-left"></i> 返回大厅</a>
-            <span class="fw-bold fs-5 text-danger">🔒 管理面板</span>
-            <span class="badge bg-danger">管理员</span>
+            <a href="/hall" class="btn-warm-outline">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回大厅</span>
+            </a>
+            <div class="admin-title">
+                <i class="fas fa-lock"></i>
+                <span>管理面板</span>
+            </div>
+            <span class="admin-badge">管理员</span>
         </div>
     </nav>
 
-    <div class="container" style="padding-top: 80px; max-width: 900px;">
+    <div class="container" style="max-width: 900px;">
         <% if (!user || !user.is_admin) { %>
-            <div class="alert alert-danger text-center">
-                <i class="fas fa-ban fa-2x mb-2"></i>
+            <div class="no-access">
+                <i class="fas fa-ban"></i>
                 <h5>无权访问</h5>
                 <p>此页面仅限管理员使用</p>
-                <a href="/hall" class="btn btn-outline-danger">返回大厅</a>
+                <a href="/hall" class="btn-warm">返回大厅</a>
             </div>
             <% } else { %>
+
                 <!-- 标签页导航 -->
                 <ul class="nav nav-tabs" id="adminTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -82,7 +376,7 @@
                             <i class="fas fa-flag text-danger me-1"></i> 举报处理
                             <% if (typeof reports !=='undefined' && reports.filter(r=> r.status === 'pending').length >
                                 0) { %>
-                                <span class="badge bg-danger">
+                                <span class="badge bg-danger ms-1">
                                     <%= reports.filter(r=> r.status === 'pending').length %>
                                 </span>
                                 <% } %>
@@ -93,46 +387,45 @@
                 <div class="tab-content" id="adminTabContent">
                     <!-- 邀请码管理 -->
                     <div class="tab-pane fade show active" id="invite" role="tabpanel">
-                        <div class="glass-card p-4 mb-4 admin-card invite">
-                            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-warning me-2"></i>生成系统邀请码</h5>
-                            <form action="/admin/generate-code" method="POST" class="row g-3 align-items-center">
-                                <div class="col-auto">
-                                    <label class="form-label mb-0">生成数量：</label>
-                                </div>
-                                <div class="col-auto">
-                                    <select name="count" class="form-select">
-                                        <option value="1">1个</option>
-                                        <option value="3">3个</option>
-                                        <option value="5">5个</option>
-                                        <option value="10">10个</option>
-                                    </select>
-                                </div>
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-warning">
-                                        <i class="fas fa-magic me-1"></i> 生成
-                                    </button>
-                                </div>
+                        <div class="admin-card invite">
+                            <div class="card-title">
+                                <i class="fas fa-plus-circle text-warning"></i>
+                                <span>生成系统邀请码</span>
+                            </div>
+                            <form action="/admin/generate-code" method="POST"
+                                class="d-flex align-items-center gap-3 flex-wrap">
+                                <label class="mb-0">生成数量：</label>
+                                <select name="count" class="form-select" style="width: auto;">
+                                    <option value="1">1个</option>
+                                    <option value="3">3个</option>
+                                    <option value="5">5个</option>
+                                    <option value="10">10个</option>
+                                </select>
+                                <button type="submit" class="btn-warm yellow">
+                                    <i class="fas fa-magic"></i> 生成
+                                </button>
                             </form>
 
                             <% if (typeof newCodes !=='undefined' && newCodes && newCodes.length> 0) { %>
-                                <div class="alert alert-success mt-4 mb-0">
+                                <div class="success-msg">
                                     <strong>✅ 生成成功！</strong>
-                                    <div class="mt-2">
-                                        <% newCodes.forEach(code=> { %>
-                                            <code class="d-block fs-5 mb-1"><%= code %></code>
-                                            <% }) %>
-                                    </div>
+                                    <% newCodes.forEach(code=> { %>
+                                        <code><%= code %></code>
+                                        <% }) %>
                                 </div>
                                 <% } %>
                         </div>
 
-                        <div class="glass-card p-4">
-                            <h5 class="fw-bold mb-3"><i class="fas fa-list text-info me-2"></i>系统邀请码列表</h5>
+                        <div class="admin-card" style="border-color: #3b82f6;">
+                            <div class="card-title">
+                                <i class="fas fa-list text-primary"></i>
+                                <span>系统邀请码列表</span>
+                            </div>
                             <% if (systemCodes.length===0) { %>
                                 <p class="text-muted text-center mb-0">暂无系统邀请码</p>
                                 <% } else { %>
                                     <div class="table-responsive">
-                                        <table class="table table-hover table-sm">
+                                        <table class="table table-hover mb-0">
                                             <thead>
                                                 <tr>
                                                     <th>邀请码</th>
@@ -143,14 +436,12 @@
                                             </thead>
                                             <tbody>
                                                 <% systemCodes.forEach(code=> { %>
-                                                    <tr class="<%= code.used_by ? 'table-secondary' : '' %>">
+                                                    <tr>
                                                         <td><code><%= code.code %></code></td>
-                                                        <td>
-                                                            <span
-                                                                class="badge <%= code.used_by ? 'bg-secondary' : 'bg-success' %>">
+                                                        <td><span
+                                                                class="status-badge <%= code.used_by ? 'used' : 'available' %>">
                                                                 <%= code.used_by ? '已使用' : '可用' %>
-                                                            </span>
-                                                        </td>
+                                                            </span></td>
                                                         <td>
                                                             <%= code.used_by_username || '-' %>
                                                         </td>
@@ -168,35 +459,40 @@
 
                     <!-- 班级管理 -->
                     <div class="tab-pane fade" id="class" role="tabpanel">
-                        <div class="glass-card p-4 mb-4 admin-card class">
-                            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-success me-2"></i>创建新班级</h5>
-                            <form action="/admin/create-class" method="POST" class="row g-3 align-items-end">
-                                <div class="col-auto">
-                                    <label class="form-label">届</label>
+                        <div class="admin-card class">
+                            <div class="card-title">
+                                <i class="fas fa-plus-circle text-success"></i>
+                                <span>创建新班级</span>
+                            </div>
+                            <form action="/admin/create-class" method="POST"
+                                class="d-flex align-items-end gap-3 flex-wrap">
+                                <div>
+                                    <label class="form-label small mb-1">届</label>
                                     <select name="year" class="form-select">
                                         <option value="2025" selected>2025届</option>
                                         <option value="2024">2024届</option>
                                         <option value="2026">2026届</option>
                                     </select>
                                 </div>
-                                <div class="col">
-                                    <label class="form-label">班级名称</label>
+                                <div class="flex-grow-1">
+                                    <label class="form-label small mb-1">班级名称</label>
                                     <input type="text" name="className" class="form-control" placeholder="如：高三(15)班"
                                         required>
                                 </div>
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-plus me-1"></i> 创建班级
-                                    </button>
-                                </div>
+                                <button type="submit" class="btn-warm green">
+                                    <i class="fas fa-plus"></i> 创建班级
+                                </button>
                             </form>
                         </div>
 
-                        <div class="glass-card p-4">
-                            <h5 class="fw-bold mb-3"><i class="fas fa-school text-info me-2"></i>班级列表</h5>
+                        <div class="admin-card" style="border-color: #3b82f6;">
+                            <div class="card-title">
+                                <i class="fas fa-school text-primary"></i>
+                                <span>班级列表</span>
+                            </div>
                             <% if (typeof classes !=='undefined' && classes.length> 0) { %>
                                 <div class="table-responsive">
-                                    <table class="table table-hover table-sm">
+                                    <table class="table table-hover mb-0">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -247,58 +543,57 @@
 
                     <!-- 举报处理 -->
                     <div class="tab-pane fade" id="report" role="tabpanel">
-                        <div class="glass-card p-4 admin-card report">
-                            <h5 class="fw-bold mb-3"><i class="fas fa-flag text-danger me-2"></i>待处理举报</h5>
+                        <div class="admin-card report">
+                            <div class="card-title">
+                                <i class="fas fa-flag text-danger"></i>
+                                <span>待处理举报</span>
+                            </div>
 
                             <% if (typeof reports==='undefined' || reports.filter(r=> r.status === 'pending').length ===
                                 0) { %>
-                                <div class="text-center text-muted py-4">
-                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <div class="empty-state">
+                                    <i class="fas fa-check-circle text-success"></i>
                                     <p>暂无待处理的举报</p>
                                 </div>
                                 <% } else { %>
                                     <% reports.filter(r=> r.status === 'pending').forEach(report => { %>
-                                        <div class="card mb-3">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <div>
-                                                        <span class="badge bg-warning text-dark">待处理</span>
-                                                        <small class="text-muted ms-2">
-                                                            <%= new Date(report.created_at).toLocaleString('zh-CN') %>
+                                        <div class="report-card">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <span class="status-badge pending">待处理</span>
+                                                    <small class="text-muted ms-2">
+                                                        <%= new Date(report.created_at).toLocaleString('zh-CN') %>
+                                                    </small>
+                                                </div>
+                                                <small class="text-muted">举报人: <%= report.reporter_name || '匿名' %>
                                                         </small>
-                                                    </div>
-                                                    <small class="text-muted">举报人: <%= report.reporter_name || '匿名' %>
-                                                            </small>
-                                                </div>
-
-                                                <div class="report-preview">
-                                                    <strong>被举报帖子内容：</strong>
-                                                    <p class="mb-0 mt-1">
-                                                        <%= report.post_content ? report.post_content.substring(0, 200)
-                                                            + (report.post_content.length> 200 ? '...' : '') : '帖子已删除'
-                                                            %>
-                                                    </p>
-                                                </div>
-
-                                                <div class="d-flex gap-2 mt-3">
-                                                    <a href="/class/<%= report.class_id %>"
-                                                        class="btn btn-sm btn-outline-primary" target="_blank">
-                                                        <i class="fas fa-eye me-1"></i>查看帖子
-                                                    </a>
-                                                    <form action="/admin/report/<%= report.id %>/delete-post"
-                                                        method="POST" class="d-inline">
-                                                        <button type="submit" class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('确定删除该帖子吗？')">
-                                                            <i class="fas fa-trash me-1"></i>删除帖子
-                                                        </button>
-                                                    </form>
-                                                    <form action="/admin/report/<%= report.id %>/dismiss" method="POST"
-                                                        class="d-inline">
-                                                        <button type="submit" class="btn btn-sm btn-secondary">
-                                                            <i class="fas fa-times me-1"></i>驳回举报
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                            </div>
+                                            <div class="report-preview">
+                                                <strong>被举报帖子内容：</strong>
+                                                <p class="mb-0 mt-1">
+                                                    <%= report.post_content ? report.post_content.substring(0, 200) +
+                                                        (report.post_content.length> 200 ? '...' : '') : '帖子已删除' %>
+                                                </p>
+                                            </div>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <a href="/class/<%= report.class_id %>"
+                                                    class="btn btn-sm btn-outline-primary" target="_blank">
+                                                    <i class="fas fa-eye me-1"></i>查看帖子
+                                                </a>
+                                                <form action="/admin/report/<%= report.id %>/delete-post" method="POST"
+                                                    class="d-inline">
+                                                    <button type="submit" class="btn-warm red"
+                                                        style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
+                                                        onclick="return confirm('确定删除该帖子吗？')">
+                                                        <i class="fas fa-trash me-1"></i>删除帖子
+                                                    </button>
+                                                </form>
+                                                <form action="/admin/report/<%= report.id %>/dismiss" method="POST"
+                                                    class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-times me-1"></i>驳回举报
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
                                         <% }) %>
@@ -307,10 +602,13 @@
 
                         <% if (typeof reports !=='undefined' && reports.filter(r=> r.status !== 'pending').length > 0) {
                             %>
-                            <div class="glass-card p-4 mt-4">
-                                <h6 class="text-muted mb-3">历史记录</h6>
+                            <div class="admin-card" style="border-color: #94a3b8;">
+                                <div class="card-title">
+                                    <i class="fas fa-history text-muted"></i>
+                                    <span>历史记录</span>
+                                </div>
                                 <div class="table-responsive">
-                                    <table class="table table-sm small">
+                                    <table class="table table-sm mb-0">
                                         <thead>
                                             <tr>
                                                 <th>时间</th>
@@ -324,12 +622,10 @@
                                                     <td>
                                                         <%= new Date(r.created_at).toLocaleDateString('zh-CN') %>
                                                     </td>
-                                                    <td>
-                                                        <span
-                                                            class="badge <%= r.status === 'resolved' ? 'bg-success' : 'bg-secondary' %>">
+                                                    <td><span
+                                                            class="status-badge <%= r.status === 'resolved' ? 'resolved' : 'dismissed' %>">
                                                             <%= r.status==='resolved' ? '已处理' : '已驳回' %>
-                                                        </span>
-                                                    </td>
+                                                        </span></td>
                                                     <td>#<%= r.post_id %>
                                                     </td>
                                                 </tr>
