@@ -44,8 +44,11 @@
             <div class="col-lg-8 col-md-10">
                 <!-- 主帖 -->
                 <div class="treehole-card post-detail-card">
-                    <div class="post-header">
-                        <div class="post-author">
+                    <div class="post-header d-flex flex-column align-items-start">
+                        <% if (post.title) { %>
+                            <h2 class="fw-bold text-dark mb-3" style="font-size: 1.5rem;"><%= post.title %></h2>
+                        <% } %>
+                        <div class="post-author w-100">
                             <div class="post-avatar" style="background: <%= post.is_anonymous ? '#eff6ff' : '#dbeafe' %>; color: <%= post.is_anonymous ? '#93c5fd' : '#1d4ed8' %>;">
                                 <% if (post.is_anonymous) { %>
                                     <i class="fas fa-user-secret"></i>
@@ -54,11 +57,15 @@
                                 <% } %>
                             </div>
                             <div class="post-author-info">
-                                <div class="post-author-name">
+                                <div class="post-author-name d-flex align-items-center gap-2">
                                     <% if (post.is_anonymous) { %>
                                         <span class="text-muted"><%= post.anonymousName || '匿名用户' %></span>
                                     <% } else { %>
                                         <%= post.username %>
+                                    <% } %>
+
+                                    <% if (post.displayIdentity) { %>
+                                        <span class="badge bg-info bg-opacity-10 text-info" style="font-size: 0.75rem; font-weight: normal;"><%= post.displayIdentity %></span>
                                     <% } %>
                                 </div>
                                 <span class="post-time">
@@ -68,9 +75,7 @@
                         </div>
                     </div>
 
-                    <div class="post-content">
-                        <p><%- post.content.replace(/\n/g, '<br>' ) %></p>
-                    </div>
+                    <div class="post-content" style="white-space: pre-wrap; margin-top: 1rem; font-size: 1.15rem; line-height: 1.6;"><%- post.content %></div>
 
                     <% if (post.image) { %>
                         <div class="mt-3">

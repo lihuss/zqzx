@@ -55,6 +55,59 @@
             border-radius: 0.5rem;
             font-weight: 600;
         }
+
+        /* 邀请码样式 */
+        .code-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 0.75rem;
+            color: white;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        }
+
+        .code-card.used {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+            opacity: 0.8;
+        }
+
+        .invite-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
     </style>
 </head>
 
@@ -120,10 +173,47 @@
                             </div>
                         <% } %>
 
-                        <div class="d-grid gap-2">
-                            <a href="/my-codes" class="btn btn-outline-warning">
-                                <i class="fas fa-ticket-alt me-2"></i>我的邀请码
-                            </a>
+                        <!-- 邀请码区域 -->
+                        <div class="card bg-light border-0 rounded-3 mb-4">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-gift text-warning me-2"></i>
+                                    <h5 class="mb-0 fw-bold text-dark">我的邀请码</h5>
+                                </div>
+                                
+                                <% if (codes && codes.length > 0) { %>
+                                    <% codes.forEach((code, index) => { %>
+                                        <div class="code-card <%= code.used_by ? 'used' : '' %>">
+                                            <div>
+                                                <div class="small opacity-75 mb-1">Code #<%= index + 1 %></div>
+                                                <div class="invite-code"><%= code.code %></div>
+                                            </div>
+                                            
+                                            <% if (code.used_by) { %>
+                                                <div class="text-end small">
+                                                    <span class="badge bg-white text-secondary bg-opacity-25">已使用</span>
+                                                    <div class="mt-1 opacity-75" style="font-size: 0.75rem;">
+                                                        By <%= code.used_by_username %>
+                                                    </div>
+                                                </div>
+                                            <% } else { %>
+                                                <button class="copy-btn" onclick="copyCode('<%= code.code %>')">
+                                                    <i class="fas fa-copy me-1"></i>复制
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    <% }); %>
+                                    <div class="text-center text-muted small mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        剩余可用：<%= codes.filter(c => !c.used_by).length %> 个
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-center text-muted py-3">暂无邀请码</div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
                             <form action="/logout" method="POST" class="d-grid">
                                 <button type="submit" class="btn btn-outline-danger">退出登录</button>
                             </form>
@@ -135,6 +225,40 @@
     </div>
 
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(code) {
+           // 优先尝试现代 API
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('邀请码已复制：' + code);
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    alert('邀请码已复制：' + text);
+                } else {
+                    prompt('请手动复制：', text);
+                }
+            } catch (err) {
+                prompt('请手动复制：', text);
+            }
+            document.body.removeChild(textArea);
+        }
+    </script>
 </body>
 
 </html>

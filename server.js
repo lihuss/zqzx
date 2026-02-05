@@ -302,20 +302,16 @@ app.post('/logout', (req, res) => {
     res.redirect('/login');
 });
 
-// 我的邀请码
-app.get('/my-codes', requireAuth, async (req, res) => {
-    try {
-        const codes = await auth.getUserInviteCodes(req.session.userId);
-        res.render('my-codes', { codes });
-    } catch (err) {
-        console.error('获取邀请码失败:', err);
-        res.redirect('/hall');
-    }
-});
 
 // --- 个人主页 ---
-app.get('/profile', requireAuth, (req, res) => {
-    res.render('profile', { user: res.locals.user });
+app.get('/profile', requireAuth, async (req, res) => {
+    try {
+        const codes = await auth.getUserInviteCodes(req.session.userId);
+        res.render('profile', { user: res.locals.user, codes });
+    } catch (err) {
+        console.error('获取个人主页数据失败:', err);
+        res.render('profile', { user: res.locals.user, codes: [] });
+    }
 });
 
 app.post('/profile/update', requireAuth, async (req, res) => {
@@ -399,8 +395,25 @@ async function getAdminData() {
             // 表可能不存在，忽略
         }
 
+        // 3. 咨询专区举报
+        let consultationReports = [];
+        try {
+            const [crRows] = await db.query(`
+                SELECT cr.id, cr.post_id, cr.reporter_id, cr.reason, cr.status, cr.created_at, 
+                       cp.content as post_content, cp.title, 0 as class_id, u.username as reporter_name,
+                       'consultation' as type
+                FROM consultation_reports cr
+                LEFT JOIN consultation_posts cp ON cr.post_id = cp.id
+                LEFT JOIN users u ON cr.reporter_id = u.id
+                ORDER BY cr.created_at DESC
+            `);
+            consultationReports = crRows;
+        } catch (e) {
+             console.error('获取咨询举报失败', e);
+        }
+
         // 合并并按时间排序
-        reports = [...classReports, ...treeholeReports].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        reports = [...classReports, ...treeholeReports, ...consultationReports].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     } catch (err) {
         console.error('获取举报列表失败:', err.message);
@@ -533,6 +546,38 @@ app.post('/admin/report/treehole/:id/delete-post', requireAuth, requireAdmin, as
 app.post('/admin/report/treehole/:id/dismiss', requireAuth, requireAdmin, async (req, res) => {
     try {
         await db.query('UPDATE treehole_reports SET status = "dismissed", resolved_at = NOW() WHERE id = ?', [req.params.id]);
+        res.redirect('/admin');
+    } catch (err) {
+        console.error(err);
+        res.redirect('/admin');
+    }
+});
+
+// 处理咨询举报 - 删除帖子
+app.post('/admin/report/consultation/:id/delete-post', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const [reports] = await db.query('SELECT * FROM consultation_reports WHERE id = ?', [reportId]);
+
+        if (reports.length > 0) {
+            const postId = reports[0].post_id;
+            
+            await db.query('DELETE FROM consultation_posts WHERE id = ?', [postId]);
+
+            // Mark report resolved
+            await db.query('UPDATE consultation_reports SET status = "resolved", resolved_at = NOW() WHERE id = ?', [reportId]);
+        }
+        res.redirect('/admin');
+    } catch (err) {
+        console.error('处理咨询举报失败:', err);
+        res.redirect('/admin');
+    }
+});
+
+// 处理咨询举报 - 驳回
+app.post('/admin/report/consultation/:id/dismiss', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        await db.query('UPDATE consultation_reports SET status = "dismissed", resolved_at = NOW() WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
     } catch (err) {
         console.error(err);
@@ -811,6 +856,11 @@ app.post('/consultation/post', requireAuth, upload.array('image', 9), async (req
         const content = req.body.content?.trim();
         const userId = req.session.userId;
         const isAnonymous = req.body.anonymous === 'on' ? 1 : 0;
+        
+        // 新增字段处理
+        const type = req.body.type || 'question';
+        const title = req.body.title?.trim() || null;
+        const parentId = req.body.parent_id || null;
 
         if (!content) {
             return res.redirect('/consultation/new');
@@ -822,15 +872,32 @@ app.post('/consultation/post', requireAuth, upload.array('image', 9), async (req
             image = JSON.stringify(images);
         }
 
+        // 修改插入语句以支持新字段
         await db.query(
-            'INSERT INTO consultation_posts (user_id, content, image, is_anonymous) VALUES (?, ?, ?, ?)',
-            [userId, content, image, isAnonymous]
+            'INSERT INTO consultation_posts (user_id, content, image, is_anonymous, type, title, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [userId, content, image, isAnonymous, type, title, parentId]
         );
 
         res.redirect('/consultation');
     } catch (err) {
         console.error('发布咨询失败:', err);
         res.send("<script>alert('发布失败，请稍后重试'); history.back();</script>");
+    }
+});
+
+// 获取提问列表API
+app.get('/api/consultation/questions', requireAuth, async (req, res) => {
+    try {
+        const [posts] = await db.query("SELECT id, title, content FROM consultation_posts WHERE type = 'question' ORDER BY created_at DESC");
+        // 处理标题，如果没有标题则截取内容
+        const data = posts.map(p => ({
+            id: p.id,
+            title: p.title || (p.content.length > 30 ? p.content.substring(0, 30) + '...' : p.content)
+        }));
+        res.json(data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json([]);
     }
 });
 
@@ -841,7 +908,7 @@ app.get('/consultation/:id', requireAuth, async (req, res) => {
 
         // 获取主帖
         const [posts] = await db.query(`
-            SELECT p.*, u.username 
+            SELECT p.*, u.username, u.university, u.school_type, u.graduation_year
             FROM consultation_posts p
             LEFT JOIN users u ON p.user_id = u.id
             WHERE p.id = ?
@@ -851,6 +918,17 @@ app.get('/consultation/:id', requireAuth, async (req, res) => {
             return res.redirect('/consultation');
         }
         const post = posts[0];
+
+        // 处理楼主显示身份
+        const now = new Date();
+        post.displayIdentity = null;
+        if (post.school_type === '高中') {
+            const gradYear = parseInt(post.graduation_year);
+            const gradDate = new Date(gradYear, 5, 9);
+            if (now > gradDate) {
+                post.displayIdentity = post.university || '大学生';
+            }
+        }
 
         // 获取评论
         const [comments] = await db.query(`
@@ -960,6 +1038,33 @@ app.post('/consultation/:id/like', requireAuth, async (req, res) => {
         console.error('点赞失败:', err);
         if (req.xhr) res.status(500).json({ success: false });
         else res.redirect('back');
+    }
+});
+
+// 举报咨询帖子
+app.post('/consultation/:id/report', requireAuth, async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const reporterId = req.session.userId;
+        const reason = req.body.reason || '用户举报';
+
+        // 检查是否已举报过
+        const [existing] = await db.query(
+            'SELECT id FROM consultation_reports WHERE post_id = ? AND reporter_id = ? AND status = "pending"',
+            [postId, reporterId]
+        );
+
+        if (existing.length === 0) {
+            await db.query(
+                'INSERT INTO consultation_reports (post_id, reporter_id, reason) VALUES (?, ?, ?)',
+                [postId, reporterId, reason]
+            );
+        }
+        
+        res.send('<script>alert("举报已提交，感谢您的反馈！"); window.location.href = "/consultation";</script>');
+    } catch (err) {
+        console.error('举报失败:', err);
+        res.send('<script>alert("举报失败，请稍后重试"); window.history.back();</script>');
     }
 });
 

@@ -23,6 +23,69 @@
             color: white;
             transform: translateY(-1px);
         }
+        
+        .mode-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .file-upload-box {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #64748b;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .file-upload-box:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+        
+        .selected-question-card {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -34,7 +97,7 @@
                 <span>返回咨询专区</span>
             </a>
             <div class="nav-brand">
-                <span class="nav-brand-text">发布新咨询</span>
+                <span class="nav-brand-text">发布新内容</span>
             </div>
             <div style="width: 100px;"></div>
         </div>
@@ -44,14 +107,47 @@
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
                 <div class="treehole-card post-form-card">
-                    <div class="post-form-title">
-                        <i class="fas fa-pen" style="color: #3b82f6;"></i>
-                        <span>写下你的问题或分享</span>
+                    
+                    <div class="mode-tabs">
+                        <button type="button" class="tab-btn active" onclick="switchMode('question')" data-mode="question">
+                            <i class="fas fa-question-circle me-1"></i>提问
+                        </button>
+                        <button type="button" class="tab-btn" onclick="switchMode('answer')" data-mode="answer">
+                            <i class="fas fa-edit me-1"></i>回答
+                        </button>
+                        <button type="button" class="tab-btn" onclick="switchMode('article')" data-mode="article">
+                            <i class="fas fa-newspaper me-1"></i>写文章
+                        </button>
                     </div>
 
-                    <form action="/consultation/post" method="POST" enctype="multipart/form-data">
+                    <form action="/consultation/post" method="POST" enctype="multipart/form-data" id="publishForm">
+                        <input type="hidden" name="type" id="postType" value="question">
+                        <input type="hidden" name="parent_id" id="parentId">
+
+                        <!-- 标题区域 (提问/文章) -->
+                        <div class="mb-3" id="title-section">
+                            <input type="text" name="title" class="form-control form-input-warm" placeholder="请输入问题标题 (选填)" id="titleInput">
+                        </div>
+
+                        <!-- 回答问题选择区域 (回答模式) -->
+                        <div class="mb-3" id="answer-section" style="display: none;">
+                            <div id="selectedQuestion" style="display: none;">
+                                <div class="selected-question-card">
+                                    <div>
+                                        <small class="text-muted d-block mb-1">正在回答：</small>
+                                        <div class="fw-bold" id="selectedTitle"></div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openQuestionModal()">更换</button>
+                                </div>
+                            </div>
+                            <div id="noQuestionSelected" class="text-center p-4 border rounded bg-light mb-3" style="border-style: dashed !important; cursor: pointer" onclick="openQuestionModal()">
+                                <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                                <p class="mb-0 text-muted">点击选择一个问题来回答</p>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
-                            <textarea name="content" class="form-input-warm" rows="6" placeholder="请详细描述你的问题或分享..." required></textarea>
+                            <textarea name="content" class="form-input-warm" rows="6" placeholder="详细描述你的问题..." required id="contentInput"></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -79,65 +175,153 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="info-tip" style="background: #eff6ff;">
-                    <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
-                    <span>温馨提示：咨询专区是互助交流的平台，发布时可选择匿名，请友善交流。</span>
+    <!-- 问题选择 Modal -->
+    <div class="modal fade" id="questionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">选择要回答的问题</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="loadingQuestions" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                    <div class="list-group list-group-flush" id="questionList">
+                        <!-- Questions will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        .file-upload-box {
-            width: 80px;
-            height: 80px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            color: #64748b;
-            background-color: #f8fafc;
-            transition: all 0.2s;
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tab 切换逻辑
+        function switchMode(mode) {
+            // Update tabs UI
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-mode="${mode}"]`).classList.add('active');
+            
+            // Update form
+            document.getElementById('postType').value = mode;
+            const titleSection = document.getElementById('title-section');
+            const answerSection = document.getElementById('answer-section');
+            const titleInput = document.getElementById('titleInput');
+            const contentInput = document.getElementById('contentInput');
+
+            if (mode === 'question') {
+                titleSection.style.display = 'block';
+                answerSection.style.display = 'none';
+                titleInput.placeholder = "请输入问题标题 (选填)";
+                titleInput.required = false;
+                contentInput.placeholder = "详细描述你的问题...";
+            } else if (mode === 'answer') {
+                titleSection.style.display = 'none';
+                answerSection.style.display = 'block';
+                contentInput.placeholder = "撰写你的回答...";
+                // 如果还没选问题，自动弹出
+                if (!document.getElementById('parentId').value) {
+                    openQuestionModal();
+                }
+            } else if (mode === 'article') {
+                titleSection.style.display = 'block';
+                answerSection.style.display = 'none';
+                titleInput.placeholder = "请输入文章标题 (必填)";
+                titleInput.required = true;
+                contentInput.placeholder = "撰写文章内容...";
+            }
         }
 
-        .file-upload-box:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
-            background-color: #eff6ff;
+        // Modal 与 数据加载
+        const questionModal = new bootstrap.Modal(document.getElementById('questionModal'));
+        let questionsLoaded = false;
+
+        function openQuestionModal() {
+            questionModal.show();
+            if (!questionsLoaded) {
+                loadQuestions();
+            }
+        }
+
+        async function loadQuestions() {
+            try {
+                const res = await fetch('/api/consultation/questions');
+                const questions = await res.json();
+                
+                const list = document.getElementById('questionList');
+                document.getElementById('loadingQuestions').style.display = 'none';
+                
+                if (questions.length === 0) {
+                    list.innerHTML = '<div class="text-center py-4 text-muted">暂时还没有问题可回答</div>';
+                    return;
+                }
+
+                list.innerHTML = questions.map(q => `
+                    <button type="button" class="list-group-item list-group-item-action py-3" 
+                            onclick="selectQuestion(${q.id}, '${escapeHtml(q.title)}')">
+                        <div class="fw-bold text-dark">${q.title}</div>
+                        <small class="text-muted text-truncate d-block mt-1">${q.content ? q.content.substring(0, 50) : ''}</small>
+                    </button>
+                `).join('');
+                
+                questionsLoaded = true;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loadingQuestions').innerHTML = '<span class="text-danger">加载失败</span>';
+            }
+        }
+
+        function selectQuestion(id, title) {
+            document.getElementById('parentId').value = id;
+            document.getElementById('selectedTitle').textContent = title;
+            
+            // 填充隐藏的 title 字段为问题标题，以便后端有记录（可选，看需不需要）
+            document.getElementById('titleInput').value = title; 
+
+            document.getElementById('selectedQuestion').style.display = 'block';
+            document.getElementById('noQuestionSelected').style.display = 'none';
+            
+            questionModal.hide();
+        }
+
+        function escapeHtml(text) {
+          if (!text) return "";
+          return text
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
         }
         
-        .preview-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-        }
-    </style>
-    <script>
-        const dt = new DataTransfer();
+        // 表单提交前校验
+        document.getElementById('publishForm').addEventListener('submit', function(e) {
+            const type = document.getElementById('postType').value;
+            if (type === 'answer' && !document.getElementById('parentId').value) {
+                e.preventDefault();
+                alert('请选择一个问题进行回答');
+                openQuestionModal();
+            }
+        });
 
+        // 图片处理逻辑 (保持原有)
+        const dt = new DataTransfer();
         function handleFileSelect(input) {
             const files = input.files;
-            
-            // 将新选择的文件添加到 DataTransfer 对象中
             for (let i = 0; i < files.length; i++) {
-                // 简单的去重检查
                 let exists = false;
                 for(let j = 0; j < dt.files.length; j++) {
                     if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
-                        exists = true;
-                        break;
+                        exists = true; break;
                     }
                 }
-                if (!exists) {
-                    dt.items.add(files[i]);
-                }
+                if (!exists) dt.items.add(files[i]);
             }
-
-            // 检查数量限制
             if (dt.files.length > 9) {
                 alert('最多只能上传 9 张图片，已保留前 9 张');
                 const newDt = new DataTransfer();
@@ -149,10 +333,7 @@
                     dt.items.add(newDt.files[i]);
                 }
             }
-
-            // 更新 input 的 files
             input.files = dt.files;
-
             updatePreview();
         }
 
@@ -160,41 +341,26 @@
             const grid = document.getElementById('upload-grid');
             const btnWrapper = document.getElementById('upload-btn-wrapper');
             const hint = document.getElementById('upload-hint');
-
-            // 移除所有现有的预览图
             const previews = grid.querySelectorAll('.preview-item');
             previews.forEach(el => el.remove());
             
-            if(dt.files.length > 0) {
-                 hint.textContent = `已选择 ${dt.files.length} / 9 张图片`;
-            } else {
-                 hint.textContent = '支持最多9张';
-            }
+            if(dt.files.length > 0) hint.textContent = `已选择 ${dt.files.length} / 9 张图片`;
+            else hint.textContent = '支持最多9张';
 
-            // 生成预览图
             Array.from(dt.files).forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const div = document.createElement('div');
                     div.className = 'preview-item position-relative';
-                    
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'border rounded';
-                    
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center';
-                    btn.style.width = '20px';
-                    btn.style.height = '20px';
-                    btn.style.transform = 'translate(30%, -30%)';
-                    btn.style.borderRadius = '50%';
+                    btn.style.cssText = 'width:20px;height:20px;transform:translate(30%, -30%);border-radius:50%';
                     btn.innerHTML = '&times;';
-                    btn.onclick = function(ev) {
-                        ev.stopPropagation();
-                        removeFile(index);
-                    };
-
+                    btn.onclick = function(ev) { ev.stopPropagation(); removeFile(index); };
                     div.appendChild(img);
                     div.appendChild(btn);
                     grid.insertBefore(div, btnWrapper);
@@ -202,26 +368,19 @@
                 reader.readAsDataURL(file);
             });
 
-            // 检查数量限制
-            if (dt.files.length >= 9) {
-                btnWrapper.style.display = 'none';
-            } else {
-                btnWrapper.style.display = 'block';
-            }
+            if (dt.files.length >= 9) btnWrapper.style.display = 'none';
+            else btnWrapper.style.display = 'block';
         }
 
         function removeFile(index) {
             const newDt = new DataTransfer();
             for (let i = 0; i < dt.files.length; i++) {
-                if (i !== index) {
-                    newDt.items.add(dt.files[i]);
-                }
+                if (i !== index) newDt.items.add(dt.files[i]);
             }
             dt.items.clear();
             for (let i = 0; i < newDt.files.length; i++) {
                 dt.items.add(newDt.files[i]);
             }
-            
             document.getElementById('imageUpload').files = dt.files;
             updatePreview();
         }
