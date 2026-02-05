@@ -79,6 +79,120 @@
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
             color: white;
         }
+
+        /* 知乎风格卡片 */
+        .question-card {
+            padding: 20px;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+            display: block;
+            text-decoration: none;
+        }
+
+        .question-title:hover {
+            color: var(--consultation-primary);
+        }
+
+        .question-meta {
+            color: #6b7280;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* 回答预览区 */
+        .answer-preview {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            border-left: 3px solid var(--consultation-primary);
+        }
+
+        .answer-preview-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .answer-preview-author {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .answer-preview-content {
+            color: #4b5563;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .answer-preview-content.collapsed {
+            max-height: 4.8em;
+            position: relative;
+        }
+
+        .answer-preview-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2em;
+            background: linear-gradient(transparent, #f8fafc);
+        }
+
+        .answer-preview-content.expanded {
+            max-height: none;
+        }
+
+        .answer-preview-content.expanded::after {
+            display: none;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--consultation-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 0 0 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .expand-btn:hover {
+            text-decoration: underline;
+        }
+
+        .answer-count-badge {
+            background: var(--consultation-light);
+            color: var(--consultation-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .no-answer-hint {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -174,88 +288,165 @@
                     </div>
                     <% } %>
 
-                    <% posts.forEach(function(post) { %>
-                        <div class="treehole-card post-card" style="padding: 20px;">
-                            <a href="/consultation/<%= post.id %>" class="post-link text-decoration-none">
-                                <!-- 帖子标题 -->
-                                <% if (post.title) { %>
-                                    <h5 class="fw-bold mb-2 text-dark" style="font-size: 1.35rem; line-height: 1.4;">
-                                        <% if (post.type === 'question') { %>
-                                            <span class="badge bg-primary me-1" style="font-size: 0.75rem; vertical-align: text-bottom; opacity: 0.8;">提问</span>
-                                        <% } else if (post.type === 'answer') { %>
-                                            <!-- 回答通常依附于问题，但这里作为独立卡片显示 -->
-                                        <% } else if (post.type === 'article') { %>
-                                            <span class="badge bg-info me-1" style="font-size: 0.75rem; vertical-align: text-bottom; opacity: 0.8;">文章</span>
-                                        <% } %>
-                                        <%= post.title %>
-                                    </h5>
-                                <% } %>
+                        <% posts.forEach(function(post) { %>
+                            <div class="treehole-card question-card">
+                                <!-- 问题标题 (可点击进入详情) -->
+                                <a href="/consultation/<%= post.id %>" class="question-title">
+                                    <% if (post.type==='question' ) { %>
+                                        <span class="badge bg-primary me-1"
+                                            style="font-size: 0.7rem; vertical-align: middle;">提问</span>
+                                        <% } else if (post.type==='article' ) { %>
+                                            <span class="badge bg-info me-1"
+                                                style="font-size: 0.7rem; vertical-align: middle;">文章</span>
+                                            <% } %>
+                                                <%= post.title || (post.content.length> 50 ? post.content.substring(0,
+                                                    50) + '...' : post.content) %>
+                                </a>
 
-                                <!-- 帖子内容布局 -->
-                                <% 
-                                    let images = [];
-                                    try {
-                                        if (post.image && post.image.trim().startsWith('[')) {
-                                            images = JSON.parse(post.image);
-                                        } else if (post.image) {
-                                            images = [post.image];
-                                        }
-                                    } catch (e) { images = [post.image]; }
-                                    let hasImage = images.length > 0 && images[0];
-                                %>
-                                
-                                <div class="d-flex mt-2">
-                                    <% if (hasImage) { %>
-                                        <div class="me-3" style="width: 190px; height: 105px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #f6f6f6;">
-                                            <img src="<%= images[0] %>" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" class="hover-zoom">
-                                        </div>
-                                    <% } %>
-                                    
-                                    <div class="flex-grow-1">
-                                        <div class="text-secondary" style="font-size: 15px; line-height: 1.67; word-break: break-all;">
-                                            <% 
-                                                // 移除HTML标签并截取
-                                                let plainText = post.content.replace(/<[^>]+>/g, '');
-                                                let maxLength = hasImage ? 80 : 120;
-                                                let displayContent = plainText.length > maxLength ? plainText.substring(0, maxLength) + '...' : plainText;
-                                            %>
-                                            <span class="content-preview"><%= displayContent %></span>
-                                            <span class="text-primary ms-1" style="font-size: 14px; white-space: nowrap;">阅读全文 <i class="fas fa-angle-down"></i></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- 操作栏 -->
-                            <div class="post-actions d-flex justify-content-between align-items-center mt-3 pt-2">
-                                <div class="action-left">
-                                    <form action="/consultation/<%= post.id %>/like" method="POST" class="d-inline like-form">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2" style="<%= post.userLiked ? 'background: #eff6ff; color: #1d4ed8;' : 'background: #eff6ff; color: #1d4ed8;' %> font-weight: 500;">
-                                            <i class="<%= post.userLiked ? 'fas' : 'fas' %> fa-caret-up"></i>
-                                            <span class="ms-1"><%= post.likes > 0 ? '赞同 ' + post.likes : '赞同' %></span>
-                                        </button>
-                                    </form>
-    
-                                    <a href="/consultation/<%= post.id %>" class="btn btn-sm btn-link text-secondary text-decoration-none ms-3 p-0">
-                                        <i class="fas fa-comment me-1"></i>
-                                        <%= post.reply_count > 0 ? post.reply_count + ' 条评论' : '添加评论' %>
-                                    </a>
-
-                                    <!-- 显示时间 (这也是知乎风格，在底部) -->
-                                    <span class="text-muted ms-3 small">
-                                        <%= moment(post.created_at).format('MM-DD HH:mm') %>
+                                <!-- 问题元信息 -->
+                                <div class="question-meta">
+                                    <span>
+                                        <% if (post.is_anonymous) { %>
+                                            <i class="fas fa-user-secret me-1"></i>
+                                            <%= post.anonymousName || '匿名用户' %>
+                                                <% } else { %>
+                                                    <i class="fas fa-user me-1"></i>
+                                                    <%= post.username %>
+                                                        <% } %>
                                     </span>
+                                    <% if (post.displayIdentity) { %>
+                                        <span class="badge bg-info bg-opacity-10 text-info" style="font-size: 0.7rem;">
+                                            <%= post.displayIdentity %>
+                                        </span>
+                                        <% } %>
+                                            <span>
+                                                <%= moment(post.created_at).format('MM-DD HH:mm') %>
+                                            </span>
+                                            <% if (post.type==='question' && post.answerCount> 0) { %>
+                                                <span class="answer-count-badge"><i
+                                                        class="fas fa-comment-dots me-1"></i>
+                                                    <%= post.answerCount %> 个回答
+                                                </span>
+                                                <% } %>
                                 </div>
-                                <div class="action-right">
-                                    <form action="/consultation/<%= post.id %>/report" method="POST" class="d-inline" onsubmit="return confirm('确定要举报该内容吗？')">
-                                        <button type="submit" class="btn btn-sm btn-link text-muted p-0 border-0 text-decoration-none">
-                                            <i class="fas fa-flag"></i> 举报
-                                        </button>
-                                    </form>
-                                </div>
+
+                                <% if (post.type==='question' ) { %>
+                                    <!-- 热门回答预览 (知乎风格) -->
+                                    <% if (post.topAnswer) { %>
+                                        <div class="answer-preview" id="answer-<%= post.id %>">
+                                            <div class="answer-preview-header">
+                                                <span class="answer-preview-author">
+                                                    <% if (post.topAnswer.is_anonymous) { %>
+                                                        <i class="fas fa-user-secret me-1 text-muted"></i>
+                                                        <%= post.topAnswer.anonymousName || '匿名用户' %>
+                                                            <% } else { %>
+                                                                <i class="fas fa-user me-1 text-muted"></i>
+                                                                <%= post.topAnswer.username %>
+                                                                    <% } %>
+                                                </span>
+                                                <% if (post.topAnswer.displayIdentity) { %>
+                                                    <span class="badge bg-info bg-opacity-10 text-info"
+                                                        style="font-size: 0.65rem;">
+                                                        <%= post.topAnswer.displayIdentity %>
+                                                    </span>
+                                                    <% } %>
+                                                        <span class="text-primary" style="font-size: 0.75rem;"><span
+                                                                style="font-size: 0.6rem;">▲</span>
+                                                            <%= post.topAnswer.likes || 0 %>
+                                                        </span>
+                                            </div>
+                                            <div class="answer-preview-content collapsed"
+                                                id="answer-content-<%= post.id %>">
+                                                <%- post.topAnswer.content.replace(/\n/g, '<br>' ) %>
+                                            </div>
+                                            <button class="expand-btn" onclick="toggleAnswer(<%= post.id %>)"
+                                                id="expand-btn-<%= post.id %>">
+                                                <span>展开全文</span>
+                                                <i class="fas fa-angle-down"></i>
+                                            </button>
+                                        </div>
+                                        <% } else { %>
+                                            <p class="no-answer-hint">暂无回答，<a
+                                                    href="/consultation/answer?question_id=<%= post.id %>"
+                                                    class="text-primary">来写第一个回答</a></p>
+                                            <% } %>
+                                                <% } else { %>
+                                                    <!-- 文章预览 -->
+                                                    <div class="text-secondary mt-2"
+                                                        style="font-size: 0.95rem; line-height: 1.6;">
+                                                        <% let plainText=post.content.replace(/<[^>]+>/g, '');
+                                                            let displayContent = plainText.length > 120 ?
+                                                            plainText.substring(0, 120) + '...' : plainText;
+                                                            %>
+                                                            <%= displayContent %>
+                                                                <a href="/consultation/<%= post.id %>"
+                                                                    class="text-primary ms-1"
+                                                                    style="font-size: 0.875rem; white-space: nowrap;">阅读全文
+                                                                    <i class="fas fa-angle-right"></i></a>
+                                                    </div>
+                                                    <% } %>
+
+                                                        <!-- 操作栏 -->
+                                                        <div class="post-actions d-flex justify-content-between align-items-center mt-3 pt-2"
+                                                            style="border-top: 1px solid #f1f5f9;">
+                                                            <div class="action-left d-flex align-items-center gap-3">
+                                                                <% if (post.type==='question' && post.topAnswer) { %>
+                                                                    <!-- 问题有top answer时，显示回答的赞同按钮 -->
+                                                                    <form
+                                                                        action="/consultation/<%= post.topAnswer.id %>/like"
+                                                                        method="POST" class="d-inline like-form">
+                                                                        <button type="submit"
+                                                                            class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2"
+                                                                            style="background: #eff6ff; color: #1d4ed8; font-weight: 500;">
+                                                                            <span style="font-size: 0.7rem;">▲</span>
+                                                                            <span class="ms-1">
+                                                                                <%= post.topAnswer.likes> 0 ? '赞同 ' +
+                                                                                    post.topAnswer.likes :
+                                                                                    '赞同' %>
+                                                                            </span>
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } else if (post.type!=='question' ) { %>
+                                                                        <!-- 文章可以被赞同 -->
+                                                                        <form action="/consultation/<%= post.id %>/like"
+                                                                            method="POST" class="d-inline like-form">
+                                                                            <button type="submit"
+                                                                                class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2"
+                                                                                style="background: #eff6ff; color: #1d4ed8; font-weight: 500;">
+                                                                                <span
+                                                                                    style="font-size: 0.7rem;">▲</span>
+                                                                                <span class="ms-1">
+                                                                                    <%= post.likes> 0 ? '赞同 ' +
+                                                                                        post.likes :
+                                                                                        '赞同' %>
+                                                                                </span>
+                                                                            </button>
+                                                                        </form>
+                                                                        <% } %>
+
+                                                                            <a href="/consultation/<%= post.id %>"
+                                                                                class="btn btn-sm btn-link text-secondary text-decoration-none p-0">
+                                                                                <% if (post.type==='question' ) { %>
+                                                                                    <i class="fas fa-pen me-1"></i>写回答
+                                                                                    <% } else { %>
+                                                                                        <i
+                                                                                            class="fas fa-comment me-1"></i>查看评论
+                                                                                        <% } %>
+                                                                            </a>
+                                                            </div>
+                                                            <div class="action-right">
+                                                                <form action="/consultation/<%= post.id %>/report"
+                                                                    method="POST" class="d-inline"
+                                                                    onsubmit="return confirm('确定要举报该内容吗？')">
+                                                                    <button type="submit"
+                                                                        class="btn btn-sm btn-link text-muted p-0 border-0 text-decoration-none">
+                                                                        <i class="fas fa-flag"></i> 举报
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
                             </div>
-                        </div>
-                    <% }); %>
+                            <% }); %>
             </div>
         </div>
     </div>
@@ -269,13 +460,27 @@
 
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
+        // 展开/收起回答
+        function toggleAnswer(postId) {
+            const content = document.getElementById('answer-content-' + postId);
+            const btn = document.getElementById('expand-btn-' + postId);
+
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                btn.innerHTML = '<span>收起</span><i class="fas fa-angle-up"></i>';
+            } else {
+                content.classList.remove('expanded');
+                content.classList.add('collapsed');
+                btn.innerHTML = '<span>展开全文</span><i class="fas fa-angle-down"></i>';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.like-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     const btn = this.querySelector('button');
-                    const icon = btn.querySelector('i');
-                    const countSpan = btn.querySelector('.count');
 
                     try {
                         const response = await fetch(this.action, {
@@ -288,18 +493,11 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            if (data.liked) {
-                                btn.classList.add('liked');
-                                btn.style.color = '#ef4444';
-                                icon.classList.remove('far');
-                                icon.classList.add('fas');
-                            } else {
-                                btn.classList.remove('liked');
-                                btn.style.color = '';
-                                icon.classList.remove('fas');
-                                icon.classList.add('far');
+                            // Update button text - find the span with ms-1 class
+                            const span = btn.querySelector('span.ms-1');
+                            if (span) {
+                                span.textContent = data.count > 0 ? '赞同 ' + data.count : '赞同';
                             }
-                            countSpan.textContent = data.count;
                         }
                     } catch (err) {
                         console.error('点赞失败', err);

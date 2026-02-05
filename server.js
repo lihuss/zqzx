@@ -409,7 +409,7 @@ async function getAdminData() {
             `);
             consultationReports = crRows;
         } catch (e) {
-             console.error('获取咨询举报失败', e);
+            console.error('获取咨询举报失败', e);
         }
 
         // 合并并按时间排序
@@ -561,7 +561,7 @@ app.post('/admin/report/consultation/:id/delete-post', requireAuth, requireAdmin
 
         if (reports.length > 0) {
             const postId = reports[0].post_id;
-            
+
             await db.query('DELETE FROM consultation_posts WHERE id = ?', [postId]);
 
             // Mark report resolved
@@ -810,23 +810,37 @@ app.post('/post/:id/report', requireAuth, async (req, res) => {
 // 咨询专区（Consultation）路由
 // ============================
 
-// 咨询专区首页
+// 咨询专区首页 (知乎风格：只显示问题和文章，问题下附带热门回答预览)
 app.get('/consultation', requireAuth, async (req, res) => {
     try {
+        // 只获取问题和文章，不显示 answer
         const [posts] = await db.query(`
-            SELECT p.*, u.username 
+            SELECT p.*, u.username, u.university, u.school_type, u.graduation_year
             FROM consultation_posts p
             LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.type != 'answer'
             ORDER BY p.created_at DESC
         `);
 
-        // 获取用户对每个帖子的点赞状态
+        const now = new Date();
+
         for (let post of posts) {
             // 分配匿名名字
             if (post.is_anonymous) {
                 post.anonymousName = getAnonymousName(post.id, post.user_id, new Set());
             }
 
+            // 判断大学生身份
+            post.displayIdentity = null;
+            if (post.school_type === '高中') {
+                const gradYear = parseInt(post.graduation_year);
+                const gradDate = new Date(gradYear, 5, 9);
+                if (now > gradDate) {
+                    post.displayIdentity = post.university || '大学生';
+                }
+            }
+
+            // 获取用户点赞状态
             try {
                 const [like] = await db.query(
                     'SELECT id FROM consultation_likes WHERE post_id = ? AND user_id = ?',
@@ -835,6 +849,46 @@ app.get('/consultation', requireAuth, async (req, res) => {
                 post.userLiked = like.length > 0;
             } catch (e) {
                 post.userLiked = false;
+            }
+
+            // 如果是问题，获取热门回答
+            if (post.type === 'question') {
+                try {
+                    const [answers] = await db.query(`
+                        SELECT a.*, u.username, u.university, u.school_type, u.graduation_year
+                        FROM consultation_posts a
+                        LEFT JOIN users u ON a.user_id = u.id
+                        WHERE a.type = 'answer' AND a.parent_id = ?
+                        ORDER BY a.likes DESC, a.created_at DESC
+                        LIMIT 1
+                    `, [post.id]);
+
+                    if (answers.length > 0) {
+                        const topAnswer = answers[0];
+                        if (topAnswer.is_anonymous) {
+                            topAnswer.anonymousName = getAnonymousName(topAnswer.id, topAnswer.user_id, new Set());
+                        }
+                        // 大学生身份
+                        topAnswer.displayIdentity = null;
+                        if (topAnswer.school_type === '高中') {
+                            const gradYear = parseInt(topAnswer.graduation_year);
+                            const gradDate = new Date(gradYear, 5, 9);
+                            if (now > gradDate) {
+                                topAnswer.displayIdentity = topAnswer.university || '大学生';
+                            }
+                        }
+                        post.topAnswer = topAnswer;
+                    }
+
+                    // 获取回答总数
+                    const [countResult] = await db.query(
+                        "SELECT COUNT(*) as cnt FROM consultation_posts WHERE type = 'answer' AND parent_id = ?",
+                        [post.id]
+                    );
+                    post.answerCount = countResult[0].cnt;
+                } catch (e) {
+                    console.error('获取热门回答失败:', e);
+                }
             }
         }
 
@@ -850,13 +904,45 @@ app.get('/consultation/new', requireAuth, (req, res) => {
     res.render('consultation-new');
 });
 
+// 写回答页面
+app.get('/consultation/answer', requireAuth, async (req, res) => {
+    try {
+        const questionId = req.query.question_id;
+        if (!questionId) {
+            return res.redirect('/consultation');
+        }
+
+        const [questions] = await db.query(
+            'SELECT id, title, content FROM consultation_posts WHERE id = ? AND type = "question"',
+            [questionId]
+        );
+
+        if (questions.length === 0) {
+            return res.redirect('/consultation');
+        }
+
+        const question = questions[0];
+        // 如果没有标题，用内容前30字作为标题
+        if (!question.title) {
+            question.title = question.content.length > 30
+                ? question.content.substring(0, 30) + '...'
+                : question.content;
+        }
+
+        res.render('consultation-answer', { question });
+    } catch (err) {
+        console.error('加载写回答页面失败:', err);
+        res.redirect('/consultation');
+    }
+});
+
 // 发布咨询帖子
 app.post('/consultation/post', requireAuth, upload.array('image', 9), async (req, res) => {
     try {
         const content = req.body.content?.trim();
         const userId = req.session.userId;
         const isAnonymous = req.body.anonymous === 'on' ? 1 : 0;
-        
+
         // 新增字段处理
         const type = req.body.type || 'question';
         const title = req.body.title?.trim() || null;
@@ -873,12 +959,22 @@ app.post('/consultation/post', requireAuth, upload.array('image', 9), async (req
         }
 
         // 修改插入语句以支持新字段
-        await db.query(
+        const [result] = await db.query(
             'INSERT INTO consultation_posts (user_id, content, image, is_anonymous, type, title, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [userId, content, image, isAnonymous, type, title, parentId]
         );
 
-        res.redirect('/consultation');
+        // 如果是回答，跳转回问题详情页
+        if (type === 'answer' && parentId) {
+            // 更新问题的回答计数
+            await db.query(
+                'UPDATE consultation_posts SET reply_count = reply_count + 1 WHERE id = ?',
+                [parentId]
+            );
+            res.redirect('/consultation/' + parentId);
+        } else {
+            res.redirect('/consultation');
+        }
     } catch (err) {
         console.error('发布咨询失败:', err);
         res.send("<script>alert('发布失败，请稍后重试'); history.back();</script>");
@@ -901,12 +997,12 @@ app.get('/api/consultation/questions', requireAuth, async (req, res) => {
     }
 });
 
-// 咨询帖子详情
+// 咨询帖子详情 (知乎风格：显示问题及所有回答)
 app.get('/consultation/:id', requireAuth, async (req, res) => {
     try {
         const postId = req.params.id;
 
-        // 获取主帖
+        // 获取主帖（问题）
         const [posts] = await db.query(`
             SELECT p.*, u.username, u.university, u.school_type, u.graduation_year
             FROM consultation_posts p
@@ -930,49 +1026,58 @@ app.get('/consultation/:id', requireAuth, async (req, res) => {
             }
         }
 
-        // 获取评论
-        const [comments] = await db.query(`
-            SELECT c.*, u.username, u.university, u.school_type, u.graduation_year
-            FROM consultation_comments c
-            LEFT JOIN users u ON c.user_id = u.id
-            WHERE c.post_id = ?
-            ORDER BY c.created_at ASC
+        // 获取回答列表（而非评论）
+        const [answers] = await db.query(`
+            SELECT a.*, u.username, u.university, u.school_type, u.graduation_year
+            FROM consultation_posts a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.type = 'answer' AND a.parent_id = ?
+            ORDER BY a.likes DESC, a.created_at DESC
         `, [postId]);
 
-        // 构建匿名名字映射
-        const anonymousNameMap = buildAnonymousNameMap(post.id, post.user_id, comments);
-        
+        // 构建匿名名字映射（包含问题作者和所有回答者）
+        const anonymousNameMap = buildAnonymousNameMap(post.id, post.user_id, answers);
+
         // 为帖主分配名字
         if (post.is_anonymous) {
             post.anonymousName = anonymousNameMap[post.user_id];
         }
 
-        // 处理评论显示身份
-        const now = new Date();
-        comments.forEach(comment => {
-            // 分配匿名名字
-            if (comment.is_anonymous) {
-                comment.anonymousName = anonymousNameMap[comment.user_id];
+        // 处理回答显示身份和匿名名字
+        for (let answer of answers) {
+            if (answer.is_anonymous) {
+                answer.anonymousName = anonymousNameMap[answer.user_id];
             }
 
-            comment.displayIdentity = null;
-            if (comment.school_type === '高中') {
-                const gradYear = parseInt(comment.graduation_year);
+            answer.displayIdentity = null;
+            if (answer.school_type === '高中') {
+                const gradYear = parseInt(answer.graduation_year);
                 const gradDate = new Date(gradYear, 5, 9);
                 if (now > gradDate) {
-                    comment.displayIdentity = comment.university || '大学生';
+                    answer.displayIdentity = answer.university || '大学生';
                 }
             }
-        });
 
-        // 检查点赞状态
+            // 获取每个回答的点赞状态
+            try {
+                const [like] = await db.query(
+                    'SELECT id FROM consultation_likes WHERE post_id = ? AND user_id = ?',
+                    [answer.id, req.session.userId]
+                );
+                answer.userLiked = like.length > 0;
+            } catch (e) {
+                answer.userLiked = false;
+            }
+        }
+
+        // 检查问题的点赞状态
         const [like] = await db.query(
             'SELECT id FROM consultation_likes WHERE post_id = ? AND user_id = ?',
             [postId, req.session.userId]
         );
         post.userLiked = like.length > 0;
 
-        res.render('consultation-post', { post, comments, moment });
+        res.render('consultation-post', { post, answers, moment });
     } catch (err) {
         console.error('加载咨询详情失败:', err);
         res.redirect('/consultation');
@@ -1060,7 +1165,7 @@ app.post('/consultation/:id/report', requireAuth, async (req, res) => {
                 [postId, reporterId, reason]
             );
         }
-        
+
         res.send('<script>alert("举报已提交，感谢您的反馈！"); window.location.href = "/consultation";</script>');
     } catch (err) {
         console.error('举报失败:', err);

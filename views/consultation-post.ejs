@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>咨询详情 - 肇中2025</title>
+    <title>问题详情 - 肇中2025</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/treehole-style.css">
@@ -19,8 +19,138 @@
             font-size: 0.875rem;
             font-weight: 600;
         }
+
         .btn-consultation-sm:hover {
             background: #dbeafe;
+        }
+
+        .btn-write-answer {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-write-answer:hover {
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .answer-card {
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .answer-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .answer-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .answer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .answer-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .answer-content {
+            margin-top: 1rem;
+            line-height: 1.8;
+            font-size: 1rem;
+            color: #1f2937;
+        }
+
+        .answer-actions {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .answer-actions .action-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0;
+        }
+
+        .answer-actions .action-btn:hover {
+            color: #3b82f6;
+        }
+
+        .answer-actions .action-btn.liked {
+            color: #ef4444;
+        }
+
+        /* Blue triangle upvote button for answers */
+        .answer-upvote-btn {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .answer-upvote-btn:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .answer-upvote-btn.upvoted {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .answer-upvote-btn .upvote-icon {
+            font-size: 0.75rem;
+        }
+
+        .write-answer-section {
+            text-align: center;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
@@ -33,7 +163,7 @@
                 <span>返回咨询专区</span>
             </a>
             <div class="nav-brand">
-                <span class="nav-brand-text">咨询详情</span>
+                <span class="nav-brand-text">问题详情</span>
             </div>
             <div style="width: 100px;"></div>
         </div>
@@ -42,147 +172,187 @@
     <div class="container py-4">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-10">
-                <!-- 主帖 -->
+                <!-- 问题 -->
                 <div class="treehole-card post-detail-card">
                     <div class="post-header d-flex flex-column align-items-start">
                         <% if (post.title) { %>
-                            <h2 class="fw-bold text-dark mb-3" style="font-size: 1.5rem;"><%= post.title %></h2>
-                        <% } %>
-                        <div class="post-author w-100">
-                            <div class="post-avatar" style="background: <%= post.is_anonymous ? '#eff6ff' : '#dbeafe' %>; color: <%= post.is_anonymous ? '#93c5fd' : '#1d4ed8' %>;">
-                                <% if (post.is_anonymous) { %>
-                                    <i class="fas fa-user-secret"></i>
-                                <% } else { %>
-                                    <i class="fas fa-user"></i>
-                                <% } %>
-                            </div>
-                            <div class="post-author-info">
-                                <div class="post-author-name d-flex align-items-center gap-2">
-                                    <% if (post.is_anonymous) { %>
-                                        <span class="text-muted"><%= post.anonymousName || '匿名用户' %></span>
-                                    <% } else { %>
-                                        <%= post.username %>
-                                    <% } %>
+                            <h2 class="fw-bold text-dark mb-3" style="font-size: 1.5rem;">
+                                <%= post.title %>
+                            </h2>
+                            <% } %>
+                                <div class="post-author w-100">
+                                    <div class="post-avatar"
+                                        style="background: <%= post.is_anonymous ? '#eff6ff' : '#dbeafe' %>; color: <%= post.is_anonymous ? '#93c5fd' : '#1d4ed8' %>;">
+                                        <% if (post.is_anonymous) { %>
+                                            <i class="fas fa-user-secret"></i>
+                                            <% } else { %>
+                                                <i class="fas fa-user"></i>
+                                                <% } %>
+                                    </div>
+                                    <div class="post-author-info">
+                                        <div class="post-author-name d-flex align-items-center gap-2">
+                                            <% if (post.is_anonymous) { %>
+                                                <span class="text-muted">
+                                                    <%= post.anonymousName || '匿名用户' %>
+                                                </span>
+                                                <% } else { %>
+                                                    <%= post.username %>
+                                                        <% } %>
 
-                                    <% if (post.displayIdentity) { %>
-                                        <span class="badge bg-info bg-opacity-10 text-info" style="font-size: 0.75rem; font-weight: normal;"><%= post.displayIdentity %></span>
-                                    <% } %>
+                                                            <% if (post.displayIdentity) { %>
+                                                                <span class="badge bg-info bg-opacity-10 text-info"
+                                                                    style="font-size: 0.75rem; font-weight: normal;">
+                                                                    <%= post.displayIdentity %>
+                                                                </span>
+                                                                <% } %>
+                                        </div>
+                                        <span class="post-time">
+                                            <%= moment(post.created_at).format('YYYY-MM-DD HH:mm') %>
+                                        </span>
+                                    </div>
                                 </div>
-                                <span class="post-time">
-                                    <%= moment(post.created_at).format('YYYY-MM-DD HH:mm') %>
-                                </span>
-                            </div>
-                        </div>
                     </div>
 
-                    <div class="post-content" style="white-space: pre-wrap; margin-top: 1rem; font-size: 1.15rem; line-height: 1.6;"><%- post.content %></div>
+                    <div class="post-content"
+                        style="white-space: pre-wrap; margin-top: 1rem; font-size: 1.15rem; line-height: 1.6;"><%-
+                            post.content %></div>
 
                     <% if (post.image) { %>
                         <div class="mt-3">
-                            <% 
-                                let images = [];
-                                try {
-                                    if (post.image && post.image.trim().startsWith('[')) {
-                                        images = JSON.parse(post.image);
-                                    } else {
-                                        images = [post.image];
-                                    }
-                                } catch (e) { images = [post.image]; }
-                            %>
-                            <div class="image-grid" data-count="<%= images.length %>">
-                                <% images.forEach(function(img) { %>
-                                    <div class="image-item">
-                                        <img src="<%= img %>" alt="帖子图片" onclick="window.open('<%= img %>')">
-                                    </div>
-                                <% }); %>
-                            </div>
+                            <% let images=[]; try { if (post.image && post.image.trim().startsWith('[')) {
+                                images=JSON.parse(post.image); } else { images=[post.image]; } } catch (e) {
+                                images=[post.image]; } %>
+                                <div class="image-grid" data-count="<%= images.length %>">
+                                    <% images.forEach(function(img) { %>
+                                        <div class="image-item">
+                                            <img src="<%= img %>" alt="帖子图片" onclick="window.open('<%= img %>')">
+                                        </div>
+                                        <% }); %>
+                                </div>
                         </div>
-                    <% } %>
+                        <% } %>
 
-                    <div class="post-actions d-flex justify-content-between align-items-center">
-                        <div class="action-btns d-flex align-items-center">
-                            <form action="/consultation/<%= post.id %>/like" method="POST" class="like-form">
-                                <button type="submit" class="action-btn <%= post.userLiked ? 'liked' : '' %>" style="<%= post.userLiked ? 'color: #ef4444;' : '' %>">
-                                    <i class="<%= post.userLiked ? 'fas' : 'far' %> fa-heart"></i>
-                                    <span class="count"><%= post.likes %></span>
-                                </button>
-                            </form>
-                            <span class="action-btn ms-3" style="cursor: default;">
-                                <i class="far fa-comment"></i>
-                                <span><%= comments.length %></span>
-                            </span>
-                        </div>
-                        <div class="action-right">
-                             <button type="button" class="action-btn text-secondary" style="font-size: 0.9rem;" onclick="if(confirm('确定要举报该内容吗？')){ alert('举报已提交，感谢您的反馈！'); }">
-                                <i class="fas fa-flag"></i> 举报
-                             </button>
-                        </div>
-                    </div>
+                            <div class="post-actions d-flex justify-content-between align-items-center">
+                                <div class="action-btns d-flex align-items-center">
+                                    <span class="action-btn" style="cursor: default;">
+                                        <i class="far fa-comment"></i>
+                                        <span>
+                                            <%= answers.length %> 个回答
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="action-right">
+                                    <button type="button" class="action-btn text-secondary" style="font-size: 0.9rem;"
+                                        onclick="if(confirm('确定要举报该内容吗？')){ alert('举报已提交，感谢您的反馈！'); }">
+                                        <i class="fas fa-flag"></i> 举报
+                                    </button>
+                                </div>
+                            </div>
                 </div>
 
-                <!-- 回复区 -->
-                <div class="replies-section">
-                    <div class="replies-header">
-                        <i class="fas fa-comments" style="color: #3b82f6;"></i>
-                        <span>回复 (<%= comments.length %>)</span>
+                <!-- 写回答按钮区域 -->
+                <% if (post.type==='question' ) { %>
+                    <div class="text-center my-4">
+                        <a href="/consultation/answer?question_id=<%= post.id %>" class="btn-write-answer">
+                            <i class="fas fa-pen"></i>
+                            <span>写回答</span>
+                        </a>
                     </div>
-
-                    <% if (comments.length===0) { %>
-                        <div class="treehole-card empty-replies">
-                            <p>还没有回复，来帮帮TA吧~</p>
-                        </div>
                     <% } %>
 
-                    <% comments.forEach(function(comment) { %>
-                        <div class="treehole-card reply-card">
-                            <div class="reply-header">
-                                <div class="reply-author">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <% if (comment.is_anonymous) { %>
-                                            <span class="fw-bold text-muted"><%= comment.anonymousName || '匿名用户' %></span>
-                                        <% } else { %>
-                                            <span class="fw-bold"><%= comment.username %></span>
-                                        <% } %>
-
-                                        <% if (comment.displayIdentity) { %>
-                                            <span class="badge bg-info bg-opacity-10 text-info" style="font-size: 0.7rem;"><%= comment.displayIdentity %></span>
-                                        <% } %>
-                                        <% if (comment.user_id === post.user_id) { %>
-                                            <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.7rem;">楼主</span>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <span class="reply-time">
-                                    <%= moment(comment.created_at).format('MM-DD HH:mm') %>
+                        <!-- 回答区 -->
+                        <div class="replies-section">
+                            <div class="replies-header">
+                                <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
+                                <span>
+                                    <%= answers.length %> 个回答
                                 </span>
                             </div>
 
-                            <div class="reply-content">
-                                <p><%- comment.content.replace(/\n/g, '<br>' ) %></p>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
+                            <% if (answers.length===0) { %>
+                                <div class="treehole-card empty-replies">
+                                    <p>暂无回答，来分享你的见解吧~</p>
+                                </div>
+                                <% } %>
 
-                <!-- 回复表单 -->
-                <div class="treehole-card reply-form-card">
-                    <div class="reply-form-title">
-                        <i class="fas fa-reply" style="color: #3b82f6;"></i>
-                        <span>发表回复</span>
-                    </div>
-                    <form action="/consultation/<%= post.id %>/comment" method="POST">
-                        <div class="mb-3">
-                            <textarea name="content" class="form-input-warm" rows="3" placeholder="写下你的回复..." required></textarea>
+                                    <% answers.forEach(function(answer) { %>
+                                        <div class="treehole-card answer-card">
+                                            <div class="answer-author">
+                                                <div class="answer-avatar">
+                                                    <% if (answer.is_anonymous) { %>
+                                                        <i class="fas fa-user-secret"></i>
+                                                        <% } else { %>
+                                                            <i class="fas fa-user"></i>
+                                                            <% } %>
+                                                </div>
+                                                <div>
+                                                    <div class="answer-meta">
+                                                        <% if (answer.is_anonymous) { %>
+                                                            <span class="fw-bold text-muted">
+                                                                <%= answer.anonymousName || '匿名用户' %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="fw-bold">
+                                                                    <%= answer.username %>
+                                                                </span>
+                                                                <% } %>
+
+                                                                    <% if (answer.displayIdentity) { %>
+                                                                        <span
+                                                                            class="badge bg-info bg-opacity-10 text-info"
+                                                                            style="font-size: 0.7rem;">
+                                                                            <%= answer.displayIdentity %>
+                                                                        </span>
+                                                                        <% } %>
+                                                                            <% if (answer.user_id===post.user_id) { %>
+                                                                                <span
+                                                                                    class="badge bg-primary bg-opacity-10 text-primary"
+                                                                                    style="font-size: 0.7rem;">提问者</span>
+                                                                                <% } %>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        <%= moment(answer.created_at).format('YYYY-MM-DD HH:mm') %>
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="answer-content">
+                                                <%- answer.content.replace(/\n/g, '<br>' ) %>
+                                            </div>
+
+                                            <% if (answer.image) { %>
+                                                <div class="mt-3">
+                                                    <% let answerImages=[]; try { if (answer.image &&
+                                                        answer.image.trim().startsWith('[')) {
+                                                        answerImages=JSON.parse(answer.image); } else {
+                                                        answerImages=[answer.image]; } } catch (e) {
+                                                        answerImages=[answer.image]; } %>
+                                                        <div class="image-grid" data-count="<%= answerImages.length %>">
+                                                            <% answerImages.forEach(function(img) { %>
+                                                                <div class="image-item">
+                                                                    <img src="<%= img %>" alt="回答图片"
+                                                                        onclick="window.open('<%= img %>')">
+                                                                </div>
+                                                                <% }); %>
+                                                        </div>
+                                                </div>
+                                                <% } %>
+
+                                                    <div class="answer-actions">
+                                                        <form action="/consultation/<%= answer.id %>/like" method="POST"
+                                                            class="like-form d-inline">
+                                                            <button type="submit"
+                                                                class="answer-upvote-btn <%= answer.userLiked ? 'upvoted' : '' %>">
+                                                                <span class="upvote-icon">▲</span>
+                                                                <span>赞同 <span class="count">
+                                                                        <%= answer.likes || 0 %>
+                                                                    </span></span>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                        </div>
+                                        <% }); %>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="replyAnonymous" name="anonymous">
-                                <label class="form-check-label small text-muted" for="replyAnonymous">匿名回复</label>
-                            </div>
-                            <button type="submit" class="btn-consultation-sm">发送</button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
@@ -190,12 +360,10 @@
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const likeForm = document.querySelector('.like-form');
-            if (likeForm) {
-                likeForm.addEventListener('submit', async function (e) {
+            document.querySelectorAll('.like-form').forEach(form => {
+                form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     const btn = this.querySelector('button');
-                    const icon = btn.querySelector('i');
                     const countSpan = btn.querySelector('.count');
 
                     try {
@@ -209,25 +377,23 @@
                         const data = await response.json();
 
                         if (data.success) {
+                            // Handle both old style (liked) and new style (upvoted) buttons
                             if (data.liked) {
                                 btn.classList.add('liked');
-                                btn.style.color = '#ef4444';
-                                icon.classList.remove('far');
-                                icon.classList.add('fas');
+                                btn.classList.add('upvoted');
                             } else {
                                 btn.classList.remove('liked');
-                                btn.style.color = '';
-                                icon.classList.remove('fas');
-                                icon.classList.add('far');
+                                btn.classList.remove('upvoted');
                             }
-                            countSpan.textContent = data.count;
+                            if (countSpan) countSpan.textContent = data.count;
                         }
                     } catch (err) {
                         console.error('点赞失败', err);
                     }
                 });
-            }
+            });
         });
     </script>
 </body>
+
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>发布咨询 - 肇中2025</title>
+    <title>写回答 - 肇中2025</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/treehole-style.css">
@@ -25,29 +25,18 @@
             transform: translateY(-1px);
         }
 
-        .mode-tabs {
-            display: flex;
-            background: #f1f5f9;
-            padding: 0.5rem;
-            border-radius: 1rem;
+        .question-preview {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.75rem 0.75rem 0;
             margin-bottom: 1.5rem;
         }
 
-        .tab-btn {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            color: #64748b;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: #3b82f6;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        .question-preview h5 {
+            color: #1e40af;
+            font-weight: 700;
+            margin-bottom: 0;
         }
 
         .file-upload-box {
@@ -76,29 +65,18 @@
             height: 80px;
             object-fit: cover;
         }
-
-        .selected-question-card {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
     </style>
 </head>
 
 <body>
     <nav class="warm-nav">
         <div class="container">
-            <a href="/consultation" class="btn-warm-outline">
+            <a href="/consultation/<%= question.id %>" class="btn-warm-outline">
                 <i class="fas fa-arrow-left"></i>
-                <span>返回咨询专区</span>
+                <span>返回问题</span>
             </a>
             <div class="nav-brand">
-                <span class="nav-brand-text">发布新内容</span>
+                <span class="nav-brand-text">写回答</span>
             </div>
             <div style="width: 100px;"></div>
         </div>
@@ -108,39 +86,28 @@
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
                 <div class="treehole-card post-form-card">
-
-                    <div class="mode-tabs">
-                        <button type="button" class="tab-btn active" onclick="switchMode('question')"
-                            data-mode="question">
-                            <i class="fas fa-question-circle me-1"></i>提问
-                        </button>
-                        <button type="button" class="tab-btn" onclick="switchMode('article')" data-mode="article">
-                            <i class="fas fa-newspaper me-1"></i>写文章
-                        </button>
+                    <!-- 问题预览 -->
+                    <div class="question-preview">
+                        <small class="text-muted d-block mb-1"><i
+                                class="fas fa-question-circle me-1"></i>正在回答的问题</small>
+                        <h5>
+                            <%= question.title %>
+                        </h5>
                     </div>
 
-                    <form action="/consultation/post" method="POST" enctype="multipart/form-data" id="publishForm">
-                        <input type="hidden" name="type" id="postType" value="question">
-                        <input type="hidden" name="parent_id" id="parentId">
-
-                        <!-- 标题区域 (提问/文章) -->
-                        <div class="mb-3" id="title-section">
-                            <input type="text" name="title" class="form-control form-input-warm"
-                                placeholder="请输入问题标题 (选填)" id="titleInput">
-                        </div>
-
-
+                    <form action="/consultation/post" method="POST" enctype="multipart/form-data" id="answerForm">
+                        <input type="hidden" name="type" value="answer">
+                        <input type="hidden" name="parent_id" value="<%= question.id %>">
 
                         <div class="mb-3">
-                            <textarea name="content" class="form-input-warm" rows="6" placeholder="详细描述你的问题..." required
-                                id="contentInput"></textarea>
+                            <textarea name="content" class="form-input-warm" rows="8" placeholder="写下你的回答，分享你的见解和经验..."
+                                required></textarea>
                         </div>
 
                         <div class="mb-3">
                             <input type="file" id="imageUpload" name="image" accept="image/*" multiple
                                 style="display: none;" onchange="handleFileSelect(this)">
                             <div class="d-flex flex-wrap gap-2" id="upload-grid">
-                                <!-- 预览图片 -->
                                 <div class="upload-btn-wrapper" id="upload-btn-wrapper"
                                     onclick="document.getElementById('imageUpload').click()">
                                     <div class="file-upload-box">
@@ -155,10 +122,10 @@
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="anonymous" name="anonymous">
-                                <label class="form-check-label small text-muted" for="anonymous">匿名发布</label>
+                                <label class="form-check-label small text-muted" for="anonymous">匿名回答</label>
                             </div>
                             <button type="submit" class="btn-consultation">
-                                <i class="far fa-paper-plane me-2"></i>发布
+                                <i class="far fa-paper-plane me-2"></i>发布回答
                             </button>
                         </div>
                     </form>
@@ -167,34 +134,9 @@
         </div>
     </div>
 
-
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Tab 切换逻辑 (只有提问和文章)
-        function switchMode(mode) {
-            // Update tabs UI
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab-btn[data-mode="${mode}"]`).classList.add('active');
-
-            // Update form
-            document.getElementById('postType').value = mode;
-            const titleInput = document.getElementById('titleInput');
-            const contentInput = document.getElementById('contentInput');
-
-            if (mode === 'question') {
-                titleInput.placeholder = "请输入问题标题 (选填)";
-                titleInput.required = false;
-                contentInput.placeholder = "详细描述你的问题...";
-            } else if (mode === 'article') {
-                titleInput.placeholder = "请输入文章标题 (必填)";
-                titleInput.required = true;
-                contentInput.placeholder = "撰写文章内容...";
-            }
-        }
-
-
-
-        // 图片处理逻辑 (保持原有)
+        // 图片处理逻辑
         const dt = new DataTransfer();
         function handleFileSelect(input) {
             const files = input.files;
