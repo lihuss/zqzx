@@ -350,8 +350,8 @@
                                                         <%= post.topAnswer.displayIdentity %>
                                                     </span>
                                                     <% } %>
-                                                        <span class="text-muted" style="font-size: 0.75rem;"><i
-                                                                class="fas fa-thumbs-up me-1"></i>
+                                                        <span class="text-primary" style="font-size: 0.75rem;"><span
+                                                                style="font-size: 0.6rem;">▲</span>
                                                             <%= post.topAnswer.likes || 0 %>
                                                         </span>
                                             </div>
@@ -390,27 +390,49 @@
                                                         <div class="post-actions d-flex justify-content-between align-items-center mt-3 pt-2"
                                                             style="border-top: 1px solid #f1f5f9;">
                                                             <div class="action-left d-flex align-items-center gap-3">
-                                                                <form action="/consultation/<%= post.id %>/like"
-                                                                    method="POST" class="d-inline like-form">
-                                                                    <button type="submit"
-                                                                        class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2"
-                                                                        style="background: #eff6ff; color: #1d4ed8; font-weight: 500;">
-                                                                        <i class="fas fa-caret-up"></i>
-                                                                        <span class="ms-1">
-                                                                            <%= post.likes> 0 ? '赞同 ' + post.likes :
-                                                                                '赞同' %>
-                                                                        </span>
-                                                                    </button>
-                                                                </form>
+                                                                <% if (post.type==='question' && post.topAnswer) { %>
+                                                                    <!-- 问题有top answer时，显示回答的赞同按钮 -->
+                                                                    <form
+                                                                        action="/consultation/<%= post.topAnswer.id %>/like"
+                                                                        method="POST" class="d-inline like-form">
+                                                                        <button type="submit"
+                                                                            class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2"
+                                                                            style="background: #eff6ff; color: #1d4ed8; font-weight: 500;">
+                                                                            <span style="font-size: 0.7rem;">▲</span>
+                                                                            <span class="ms-1">
+                                                                                <%= post.topAnswer.likes> 0 ? '赞同 ' +
+                                                                                    post.topAnswer.likes :
+                                                                                    '赞同' %>
+                                                                            </span>
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } else if (post.type!=='question' ) { %>
+                                                                        <!-- 文章可以被赞同 -->
+                                                                        <form action="/consultation/<%= post.id %>/like"
+                                                                            method="POST" class="d-inline like-form">
+                                                                            <button type="submit"
+                                                                                class="btn btn-sm btn-outline-primary border-0 rounded-1 px-2"
+                                                                                style="background: #eff6ff; color: #1d4ed8; font-weight: 500;">
+                                                                                <span
+                                                                                    style="font-size: 0.7rem;">▲</span>
+                                                                                <span class="ms-1">
+                                                                                    <%= post.likes> 0 ? '赞同 ' +
+                                                                                        post.likes :
+                                                                                        '赞同' %>
+                                                                                </span>
+                                                                            </button>
+                                                                        </form>
+                                                                        <% } %>
 
-                                                                <a href="/consultation/<%= post.id %>"
-                                                                    class="btn btn-sm btn-link text-secondary text-decoration-none p-0">
-                                                                    <% if (post.type==='question' ) { %>
-                                                                        <i class="fas fa-pen me-1"></i>写回答
-                                                                        <% } else { %>
-                                                                            <i class="fas fa-comment me-1"></i>查看评论
-                                                                            <% } %>
-                                                                </a>
+                                                                            <a href="/consultation/<%= post.id %>"
+                                                                                class="btn btn-sm btn-link text-secondary text-decoration-none p-0">
+                                                                                <% if (post.type==='question' ) { %>
+                                                                                    <i class="fas fa-pen me-1"></i>写回答
+                                                                                    <% } else { %>
+                                                                                        <i
+                                                                                            class="fas fa-comment me-1"></i>查看评论
+                                                                                        <% } %>
+                                                                            </a>
                                                             </div>
                                                             <div class="action-right">
                                                                 <form action="/consultation/<%= post.id %>/report"
@@ -459,7 +481,6 @@
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     const btn = this.querySelector('button');
-                    const icon = btn.querySelector('i');
 
                     try {
                         const response = await fetch(this.action, {
@@ -472,8 +493,8 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            // Update button text
-                            const span = btn.querySelector('span');
+                            // Update button text - find the span with ms-1 class
+                            const span = btn.querySelector('span.ms-1');
                             if (span) {
                                 span.textContent = data.count > 0 ? '赞同 ' + data.count : '赞同';
                             }

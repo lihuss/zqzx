@@ -114,6 +114,37 @@
             color: #ef4444;
         }
 
+        /* Blue triangle upvote button for answers */
+        .answer-upvote-btn {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .answer-upvote-btn:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .answer-upvote-btn.upvoted {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .answer-upvote-btn .upvote-icon {
+            font-size: 0.75rem;
+        }
+
         .write-answer-section {
             text-align: center;
             padding: 2rem;
@@ -203,16 +234,7 @@
 
                             <div class="post-actions d-flex justify-content-between align-items-center">
                                 <div class="action-btns d-flex align-items-center">
-                                    <form action="/consultation/<%= post.id %>/like" method="POST" class="like-form">
-                                        <button type="submit" class="action-btn <%= post.userLiked ? 'liked' : '' %>"
-                                            style="<%= post.userLiked ? 'color: #ef4444;' : '' %>">
-                                            <i class="<%= post.userLiked ? 'fas' : 'far' %> fa-heart"></i>
-                                            <span class="count">
-                                                <%= post.likes %>
-                                            </span>
-                                        </button>
-                                    </form>
-                                    <span class="action-btn ms-3" style="cursor: default;">
+                                    <span class="action-btn" style="cursor: default;">
                                         <i class="far fa-comment"></i>
                                         <span>
                                             <%= answers.length %> 个回答
@@ -320,9 +342,8 @@
                                                         <form action="/consultation/<%= answer.id %>/like" method="POST"
                                                             class="like-form d-inline">
                                                             <button type="submit"
-                                                                class="action-btn <%= answer.userLiked ? 'liked' : '' %>">
-                                                                <i
-                                                                    class="<%= answer.userLiked ? 'fas' : 'far' %> fa-thumbs-up"></i>
+                                                                class="answer-upvote-btn <%= answer.userLiked ? 'upvoted' : '' %>">
+                                                                <span class="upvote-icon">▲</span>
                                                                 <span>赞同 <span class="count">
                                                                         <%= answer.likes || 0 %>
                                                                     </span></span>
@@ -343,7 +364,6 @@
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     const btn = this.querySelector('button');
-                    const icon = btn.querySelector('i');
                     const countSpan = btn.querySelector('.count');
 
                     try {
@@ -357,14 +377,13 @@
                         const data = await response.json();
 
                         if (data.success) {
+                            // Handle both old style (liked) and new style (upvoted) buttons
                             if (data.liked) {
                                 btn.classList.add('liked');
-                                icon.classList.remove('far');
-                                icon.classList.add('fas');
+                                btn.classList.add('upvoted');
                             } else {
                                 btn.classList.remove('liked');
-                                icon.classList.remove('fas');
-                                icon.classList.add('far');
+                                btn.classList.remove('upvoted');
                             }
                             if (countSpan) countSpan.textContent = data.count;
                         }
