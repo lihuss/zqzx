@@ -397,13 +397,16 @@ body {
 }
 
 .post-content {
-    padding: 1.25rem 1.5rem; /* 增加内边距 */
+    padding: 1.25rem 1.5rem;
+    /* 增加内边距 */
 }
 
 .post-content p {
     white-space: pre-wrap;
-    line-height: 1.8; /* 增加行高 */
-    font-size: 1.05rem; /* 字号微调大 */
+    line-height: 1.8;
+    /* 增加行高 */
+    font-size: 1.05rem;
+    /* 字号微调大 */
     color: #334155;
     margin: 0;
     letter-spacing: 0.01em;
@@ -707,6 +710,10 @@ body {
         height: 56px;
     }
 
+    .warm-nav .container {
+        position: relative;
+    }
+
     .nav-tabs-wrapper {
         position: fixed;
         bottom: 0;
@@ -755,6 +762,32 @@ body {
 
     .reply-image img {
         max-width: 100%;
+    }
+
+    /* 确保用户下拉菜单在手机端显示 */
+    .warm-nav .dropdown {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1050;
+        display: block !important;
+    }
+
+    /* 优化移动端 Tab 显示：隐藏图标，极致紧凑 */
+    .nav-tab i {
+        display: none;
+    }
+
+    .nav-tab {
+        flex: initial !important;
+        /* 强制取消平分宽度 */
+        width: auto !important;
+        padding: 0.4rem 0.6rem;
+        /* 极小内边距 */
+        font-size: 0.75rem;
+        /* 缩小字体 */
+        margin: 0 1px;
     }
 }
 

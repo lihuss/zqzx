@@ -272,6 +272,33 @@
             body {
                 padding-bottom: 70px;
             }
+
+            /* 修复移动端导航显示 */
+            .warm-nav .container {
+                position: relative;
+            }
+
+            .dropdown {
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 1050;
+                display: block !important;
+            }
+
+            /* 隐藏图标节省空间 */
+            .nav-tab i {
+                display: none;
+            }
+
+            .nav-tab {
+                flex: initial !important;
+                width: auto !important;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+                margin: 0 1px;
+            }
         }
     </style>
 </head>

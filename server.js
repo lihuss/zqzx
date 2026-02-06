@@ -917,6 +917,16 @@ app.get('/consultation/answer', requireAuth, async (req, res) => {
             [questionId]
         );
 
+        // 检查是否已回答，如果已回答则跳转到编辑页
+        const [existingAnswer] = await db.query(
+            'SELECT id FROM consultation_posts WHERE parent_id = ? AND user_id = ? AND type = "answer"',
+            [questionId, req.session.userId]
+        );
+
+        if (existingAnswer.length > 0) {
+            return res.redirect('/consultation/answer/' + existingAnswer[0].id + '/edit');
+        }
+
         if (questions.length === 0) {
             return res.redirect('/consultation');
         }
