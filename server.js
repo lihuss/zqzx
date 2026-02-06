@@ -866,7 +866,7 @@ app.get('/consultation', requireAuth, async (req, res) => {
                     if (answers.length > 0) {
                         const topAnswer = answers[0];
                         if (topAnswer.is_anonymous) {
-                            topAnswer.anonymousName = getAnonymousName(topAnswer.id, topAnswer.user_id, new Set());
+                            topAnswer.anonymousName = getAnonymousName(post.id, topAnswer.user_id, new Set());
                         }
                         // 大学生身份
                         topAnswer.displayIdentity = null;
@@ -1038,7 +1038,9 @@ app.get('/consultation/:id', requireAuth, async (req, res) => {
 
         // 获取回答列表（而非评论）
         const [answers] = await db.query(`
-            SELECT a.*, u.username, u.university, u.school_type, u.graduation_year
+            SELECT a.*, 
+            (SELECT COUNT(*) FROM consultation_answer_comments WHERE answer_id = a.id) as reply_count,
+            u.username, u.university, u.school_type, u.graduation_year
             FROM consultation_posts a
             LEFT JOIN users u ON a.user_id = u.id
             WHERE a.type = 'answer' AND a.parent_id = ?
@@ -1380,6 +1382,12 @@ app.post('/consultation/answer/:id/comment', requireAuth, async (req, res) => {
         await db.query(
             'INSERT INTO consultation_answer_comments (answer_id, user_id, content, is_anonymous) VALUES (?, ?, ?, ?)',
             [answerId, userId, content, isAnonymous]
+        );
+
+        // 更新回答的评论计数
+        await db.query(
+            'UPDATE consultation_posts SET reply_count = reply_count + 1 WHERE id = ?',
+            [answerId]
         );
 
         if (req.xhr || req.headers.accept?.includes('application/json')) {

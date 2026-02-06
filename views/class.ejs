@@ -86,6 +86,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <small class="text-muted mt-2 d-block" id="upload-hint">支持最多9张</small>
                         </div>
                         <div class="anon-check-warm">
                             <input type="checkbox" id="anonymous" name="anonymous">
@@ -377,6 +378,97 @@
                 reader.readAsDataURL(file);
             });
 
+    <style>
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 图片查看
+        function openImage(src) {
+            window.open(src, '_blank');
+        }
+
+        // 文件上传逻辑 (模仿 consultation-new.ejs)
+        const dt = new DataTransfer();
+
+        function handleFileSelect(input) {
+            const files = input.files;
+            for (let i = 0; i < files.length; i++) {
+                let exists = false;
+                for (let j = 0; j < dt.files.length; j++) {
+                    if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
+                        exists = true; break;
+                    }
+                }
+                if (!exists) dt.items.add(files[i]);
+            }
+            if (dt.files.length > 9) {
+                alert('最多只能上传 9 张图片，已保留前 9 张');
+                const newDt = new DataTransfer();
+                for (let i = 0; i < 9; i++) {
+                    newDt.items.add(dt.files[i]);
+                }
+                dt.items.clear();
+                for (let i = 0; i < newDt.files.length; i++) {
+                    dt.items.add(newDt.files[i]);
+                }
+            }
+            input.files = dt.files;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const grid = document.getElementById('upload-grid');
+            const btnWrapper = document.getElementById('upload-btn-wrapper');
+            const hint = document.getElementById('upload-hint');
+
+            // 移除旧的预览，但保留按钮
+            const previews = grid.querySelectorAll('.preview-item');
+            previews.forEach(el => el.remove());
+
+            if (hint) {
+                if (dt.files.length > 0) hint.textContent = `已选择 ${dt.files.length} / 9 张图片`;
+                else hint.textContent = '支持最多9张';
+            }
+
+            Array.from(dt.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item position-relative';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'border rounded';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center';
+                    btn.style.width = '20px';
+                    btn.style.height = '20px';
+                    btn.style.transform = 'translate(30%, -30%)';
+                    btn.style.borderRadius = '50%';
+                    btn.innerHTML = '&times;';
+                    btn.onclick = function(ev) {
+                        ev.stopPropagation();
+                        removeFile(index);
+                    };
+                    div.appendChild(img);
+                    div.appendChild(btn);
+                    grid.insertBefore(div, btnWrapper);
+                }
+                reader.readAsDataURL(file);
+            });
+
             if (dt.files.length >= 9) {
                 btnWrapper.style.display = 'none';
             } else {
@@ -395,24 +487,44 @@
             for (let i = 0; i < newDt.files.length; i++) {
                 dt.items.add(newDt.files[i]);
             }
-            
+
             document.getElementById('imageUpload').files = dt.files;
             updatePreview();
-        }         }
-                    count.textContent = data.count;
+        }
+
+        // 点赞逻辑
+        async function toggleLike(btn) {
+            const postId = btn.dataset.postId;
+            const icon = btn.querySelector('i');
+            const count = btn.querySelector('.like-count');
+
+            try {
+                const response = await fetch(`/post/${postId}/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.liked !== undefined) {
+                    if (data.liked) {
+                        btn.classList.add('liked');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        btn.classList.remove('liked');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                    count.textContent = data.likes;
                     btn.style.transform = 'scale(1.2)';
-                    setTimeout(function () { btn.style.transform = ''; }, 200);
+                    setTimeout(function() {
+                        btn.style.transform = '';
+                    }, 200);
                 }
             } catch (err) {
                 console.error('点赞失败:', err);
             }
         }
-
-        // 显示选中的文件名
-        document.getElementById('imageUpload').addEventListener('change', function (e) {
-            var fileName = e.target.files[0] ? e.target.files[0].name : '上传照片 (可选)';
-            this.nextElementSibling.querySelector('span').textContent = fileName;
-        });
     </script>
 </body>
 

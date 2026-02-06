@@ -2,7 +2,7 @@
 .image-grid {
     display: grid;
     gap: 8px; /* 增加间距 */
-    margin-top: 12px;
+    margin-top: 0;
     width: 100%;
     /* 增加最大宽度，使其在宽屏上更舒展，但保持九宫格紧凑感 */
     max-width: 600px; 
