@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑回答 - 肇中2025</title>
+    <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/treehole-style.css">
+    <style>
+        .btn-consultation {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-consultation:hover {
+            opacity: 0.9;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .question-preview {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.75rem 0.75rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-preview h5 {
+            color: #1e40af;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .file-upload-box {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #64748b;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .file-upload-box:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .existing-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .edit-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="warm-nav">
+        <div class="container">
+            <a href="/consultation/<%= question.id %>" class="btn-warm-outline">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回问题</span>
+            </a>
+            <div class="nav-brand">
+                <span class="nav-brand-text">编辑回答</span>
+            </div>
+            <div style="width: 100px;"></div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="treehole-card post-form-card">
+                    <!-- 问题预览 -->
+                    <div class="question-preview">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-question-circle me-1"></i>正在编辑的回答
+                            <span class="edit-badge ms-2"><i class="fas fa-edit me-1"></i>编辑模式</span>
+                        </small>
+                        <h5>
+                            <%= question.title %>
+                        </h5>
+                    </div>
+
+                    <form action="/consultation/answer/<%= answer.id %>/edit" method="POST"
+                        enctype="multipart/form-data" id="editForm">
+                        <div class="mb-3">
+                            <textarea name="content" class="form-input-warm" rows="8" placeholder="写下你的回答，分享你的见解和经验..."
+                                required><%= answer.content %></textarea>
+                        </div>
+
+                        <!-- 现有图片预览 -->
+                        <% if (answer.image) { %>
+                            <% let existingImages=[]; try { if (answer.image && answer.image.trim().startsWith('[')) {
+                                existingImages=JSON.parse(answer.image); } else { existingImages=[answer.image]; } }
+                                catch (e) { existingImages=[answer.image]; } %>
+                                <% if (existingImages.length> 0 && existingImages[0]) { %>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">现有图片</label>
+                                        <div class="d-flex flex-wrap gap-2" id="existing-images">
+                                            <% existingImages.forEach(function(img, index) { %>
+                                                <div class="position-relative" id="existing-img-<%= index %>">
+                                                    <img src="<%= img %>" alt="现有图片"
+                                                        class="existing-image border rounded">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center"
+                                                        style="width:20px;height:20px;transform:translate(30%, -30%);border-radius:50%"
+                                                        onclick="removeExistingImage(<%= index %>)">×</button>
+                                                </div>
+                                                <% }); %>
+                                        </div>
+                                        <input type="hidden" name="keepImages" id="keepImages" value="true">
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted">上传新图片（将替换现有图片）</label>
+                                                <input type="file" id="imageUpload" name="image" accept="image/*"
+                                                    multiple style="display: none;" onchange="handleFileSelect(this)">
+                                                <div class="d-flex flex-wrap gap-2" id="upload-grid">
+                                                    <div class="upload-btn-wrapper" id="upload-btn-wrapper"
+                                                        onclick="document.getElementById('imageUpload').click()">
+                                                        <div class="file-upload-box">
+                                                            <i class="far fa-image"></i>
+                                                            <span>图片</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted mt-2 d-block" id="upload-hint">支持最多9张</small>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end mt-4">
+                                                <a href="/consultation/<%= question.id %>"
+                                                    class="btn btn-outline-secondary me-2"
+                                                    style="border-radius: 9999px; padding: 0.75rem 1.5rem;">
+                                                    取消
+                                                </a>
+                                                <button type="submit" class="btn-consultation">
+                                                    <i class="far fa-save me-2"></i>保存修改
+                                                </button>
+                                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let removedExisting = false;
+
+        function removeExistingImage(index) {
+            const imgDiv = document.getElementById('existing-img-' + index);
+            if (imgDiv) {
+                imgDiv.remove();
+            }
+            // 检查是否还有现有图片
+            const container = document.getElementById('existing-images');
+            if (container && container.children.length === 0) {
+                document.getElementById('keepImages').value = 'false';
+                container.parentElement.style.display = 'none';
+            }
+        }
+
+        // 图片处理逻辑
+        const dt = new DataTransfer();
+        function handleFileSelect(input) {
+            const files = input.files;
+            for (let i = 0; i < files.length; i++) {
+                let exists = false;
+                for (let j = 0; j < dt.files.length; j++) {
+                    if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
+                        exists = true; break;
+                    }
+                }
+                if (!exists) dt.items.add(files[i]);
+            }
+            if (dt.files.length > 9) {
+                alert('最多只能上传 9 张图片，已保留前 9 张');
+                const newDt = new DataTransfer();
+                for (let i = 0; i < 9; i++) {
+                    newDt.items.add(dt.files[i]);
+                }
+                dt.items.clear();
+                for (let i = 0; i < newDt.files.length; i++) {
+                    dt.items.add(newDt.files[i]);
+                }
+            }
+            input.files = dt.files;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const grid = document.getElementById('upload-grid');
+            const btnWrapper = document.getElementById('upload-btn-wrapper');
+            const hint = document.getElementById('upload-hint');
+            const previews = grid.querySelectorAll('.preview-item');
+            previews.forEach(el => el.remove());
+
+            if (dt.files.length > 0) hint.textContent = `已选择 ${dt.files.length} / 9 张新图片`;
+            else hint.textContent = '支持最多9张';
+
+            Array.from(dt.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item position-relative';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'border rounded';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center';
+                    btn.style.cssText = 'width:20px;height:20px;transform:translate(30%, -30%);border-radius:50%';
+                    btn.innerHTML = '×';
+                    btn.onclick = function (ev) { ev.stopPropagation(); removeFile(index); };
+                    div.appendChild(img);
+                    div.appendChild(btn);
+                    grid.insertBefore(div, btnWrapper);
+                }
+                reader.readAsDataURL(file);
+            });
+
+            if (dt.files.length >= 9) btnWrapper.style.display = 'none';
+            else btnWrapper.style.display = 'block';
+        }
+
+        function removeFile(index) {
+            const newDt = new DataTransfer();
+            for (let i = 0; i < dt.files.length; i++) {
+                if (i !== index) newDt.items.add(dt.files[i]);
+            }
+            dt.items.clear();
+            for (let i = 0; i < newDt.files.length; i++) {
+                dt.items.add(newDt.files[i]);
+            }
+            document.getElementById('imageUpload').files = dt.files;
+            updatePreview();
+        }
+    </script>
+</body>
+
+</html>

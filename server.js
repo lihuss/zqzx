@@ -1077,7 +1077,10 @@ app.get('/consultation/:id', requireAuth, async (req, res) => {
         );
         post.userLiked = like.length > 0;
 
-        res.render('consultation-post', { post, answers, moment });
+        // 检查当前用户是否已回答该问题
+        const userAnswer = answers.find(a => a.user_id === req.session.userId);
+
+        res.render('consultation-post', { post, answers, moment, userAnswer });
     } catch (err) {
         console.error('加载咨询详情失败:', err);
         res.redirect('/consultation');
@@ -1170,6 +1173,227 @@ app.post('/consultation/:id/report', requireAuth, async (req, res) => {
     } catch (err) {
         console.error('举报失败:', err);
         res.send('<script>alert("举报失败，请稍后重试"); window.history.back();</script>');
+    }
+});
+
+
+// ============================
+// 回答编辑 & 回答评论 路由
+// ============================
+
+// 编辑回答页面
+app.get('/consultation/answer/:id/edit', requireAuth, async (req, res) => {
+    try {
+        const answerId = req.params.id;
+        const userId = req.session.userId;
+
+        // 获取回答信息
+        const [answers] = await db.query(
+            'SELECT a.*, p.title as question_title, p.id as question_id FROM consultation_posts a LEFT JOIN consultation_posts p ON a.parent_id = p.id WHERE a.id = ? AND a.type = "answer"',
+            [answerId]
+        );
+
+        if (answers.length === 0) {
+            return res.redirect('/consultation');
+        }
+
+        const answer = answers[0];
+
+        // 验证是否为作者
+        if (answer.user_id !== userId) {
+            return res.send('<script>alert("您没有权限编辑此回答"); history.back();</script>');
+        }
+
+        // 构造问题对象供模板使用
+        const question = {
+            id: answer.question_id,
+            title: answer.question_title || '问题'
+        };
+
+        res.render('consultation-answer-edit', { answer, question });
+    } catch (err) {
+        console.error('加载编辑页面失败:', err);
+        res.redirect('/consultation');
+    }
+});
+
+// 处理编辑回答提交
+app.post('/consultation/answer/:id/edit', requireAuth, upload.array('image', 9), async (req, res) => {
+    try {
+        const answerId = req.params.id;
+        const userId = req.session.userId;
+        const content = req.body.content?.trim();
+
+        if (!content) {
+            return res.send('<script>alert("回答内容不能为空"); history.back();</script>');
+        }
+
+        // 验证所有权
+        const [existing] = await db.query(
+            'SELECT user_id, parent_id, image FROM consultation_posts WHERE id = ? AND type = "answer"',
+            [answerId]
+        );
+
+        if (existing.length === 0 || existing[0].user_id !== userId) {
+            return res.send('<script>alert("您没有权限编辑此回答"); history.back();</script>');
+        }
+
+        const parentId = existing[0].parent_id;
+
+        // 处理图片：如果上传了新图片则使用新图片，否则保留原图片
+        let image = existing[0].image;
+        if (req.files && req.files.length > 0) {
+            const images = req.files.map(file => '/uploads/' + file.filename);
+            image = JSON.stringify(images);
+        } else if (req.body.keepImages === 'false') {
+            image = '';
+        }
+
+        // 更新回答
+        await db.query(
+            'UPDATE consultation_posts SET content = ?, image = ?, updated_at = NOW() WHERE id = ?',
+            [content, image, answerId]
+        );
+
+        res.redirect('/consultation/' + parentId);
+    } catch (err) {
+        console.error('编辑回答失败:', err);
+        res.send('<script>alert("编辑失败，请稍后重试"); history.back();</script>');
+    }
+});
+
+// 删除回答
+app.post('/consultation/answer/:id/delete', requireAuth, async (req, res) => {
+    try {
+        const answerId = req.params.id;
+        const userId = req.session.userId;
+
+        // 验证所有权
+        const [existing] = await db.query(
+            'SELECT user_id, parent_id FROM consultation_posts WHERE id = ? AND type = "answer"',
+            [answerId]
+        );
+
+        if (existing.length === 0 || existing[0].user_id !== userId) {
+            return res.send('<script>alert("您没有权限删除此回答"); history.back();</script>');
+        }
+
+        const parentId = existing[0].parent_id;
+
+        // 删除回答的评论
+        await db.query('DELETE FROM consultation_answer_comments WHERE answer_id = ?', [answerId]);
+
+        // 删除回答的点赞
+        await db.query('DELETE FROM consultation_likes WHERE post_id = ?', [answerId]);
+
+        // 删除回答
+        await db.query('DELETE FROM consultation_posts WHERE id = ?', [answerId]);
+
+        // 更新问题的回答计数
+        await db.query(
+            'UPDATE consultation_posts SET reply_count = GREATEST(reply_count - 1, 0) WHERE id = ?',
+            [parentId]
+        );
+
+        res.redirect('/consultation/' + parentId);
+    } catch (err) {
+        console.error('删除回答失败:', err);
+        res.send('<script>alert("删除失败，请稍后重试"); history.back();</script>');
+    }
+});
+
+// 获取回答的评论列表 (AJAX)
+app.get('/api/consultation/answer/:id/comments', requireAuth, async (req, res) => {
+    try {
+        const answerId = req.params.id;
+
+        const [comments] = await db.query(`
+            SELECT c.*, u.username, u.university, u.school_type, u.graduation_year
+            FROM consultation_answer_comments c
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE c.answer_id = ?
+            ORDER BY c.created_at ASC
+        `, [answerId]);
+
+        // 为匿名评论生成名字
+        const now = new Date();
+        for (let comment of comments) {
+            if (comment.is_anonymous) {
+                comment.anonymousName = getAnonymousName(answerId, comment.user_id, new Set());
+                comment.username = null;
+            }
+            comment.displayIdentity = null;
+            if (comment.school_type === '高中') {
+                const gradYear = parseInt(comment.graduation_year);
+                const gradDate = new Date(gradYear, 5, 9);
+                if (now > gradDate) {
+                    comment.displayIdentity = comment.university || '大学生';
+                }
+            }
+        }
+
+        res.json({ success: true, comments });
+    } catch (err) {
+        console.error('获取评论失败:', err);
+        res.status(500).json({ success: false, error: '获取评论失败' });
+    }
+});
+
+// 添加回答评论
+app.post('/consultation/answer/:id/comment', requireAuth, async (req, res) => {
+    try {
+        const answerId = req.params.id;
+        const userId = req.session.userId;
+        const content = req.body.content?.trim();
+        const isAnonymous = req.body.anonymous === 'on' || req.body.anonymous === true ? 1 : 0;
+
+        if (!content) {
+            if (req.xhr || req.headers.accept?.includes('application/json')) {
+                return res.status(400).json({ success: false, error: '评论内容不能为空' });
+            }
+            return res.redirect('back');
+        }
+
+        // 验证回答存在
+        const [answers] = await db.query(
+            'SELECT parent_id FROM consultation_posts WHERE id = ? AND type = "answer"',
+            [answerId]
+        );
+
+        if (answers.length === 0) {
+            if (req.xhr || req.headers.accept?.includes('application/json')) {
+                return res.status(404).json({ success: false, error: '回答不存在' });
+            }
+            return res.redirect('/consultation');
+        }
+
+        await db.query(
+            'INSERT INTO consultation_answer_comments (answer_id, user_id, content, is_anonymous) VALUES (?, ?, ?, ?)',
+            [answerId, userId, content, isAnonymous]
+        );
+
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+            const [user] = await db.query('SELECT username FROM users WHERE id = ?', [userId]);
+            res.json({
+                success: true,
+                comment: {
+                    content,
+                    username: isAnonymous ? null : user[0].username,
+                    anonymousName: isAnonymous ? getAnonymousName(answerId, userId, new Set()) : null,
+                    is_anonymous: isAnonymous,
+                    created_at: new Date()
+                }
+            });
+        } else {
+            res.redirect('/consultation/' + answers[0].parent_id);
+        }
+    } catch (err) {
+        console.error('添加评论失败:', err);
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+            res.status(500).json({ success: false, error: '添加评论失败' });
+        } else {
+            res.send('<script>alert("评论失败，请稍后重试"); history.back();</script>');
+        }
     }
 });
 
