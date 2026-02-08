@@ -267,7 +267,8 @@ app.post('/register', async (req, res) => {
 
                 const gradeMap = { 1: '一', 2: '二', 3: '三' };
                 const prefix = (schoolType === '初中' ? '初' : '高') + gradeMap[gradeNum];
-                className = `${prefix}${className.trim()}班`;
+                // 统一格式：例如 高三（15）班
+                className = `${prefix}（${className.trim()}）班`;
             }
         }
 
@@ -1749,12 +1750,67 @@ async function initAutoCreateClasses() {
 
         // 遍历每一届
         for (let year = startYear; year <= currentHigh3GradYear; year++) {
-            // 假设每个年级20个班
-            for (let i = 1; i <= 20; i++) {
-                const className = `高三${i}班`; // 统一格式，例如：高三1班
+            // 获取该届所有已存在的班级
+            // 防止重复创建（即使命名格式稍有不同，只要班号重合就跳过）
+            const [existingRows] = await db.query(
+                'SELECT full_name FROM classes WHERE full_name LIKE ?',
+                [`${year}届%`]
+            );
+
+            // 提取已存在的班级编号
+            const existingNumbers = new Set();
+            for (const row of existingRows) {
+                // 匹配 "高三...x班"，兼容空格、括号等
+                // 例如：2025届 高三9班、2025届 高三(9)班、2025届 高三 9 班、高三（9）班
+                // 修改正则以兼容数字后可能有括号的情况
+                const match = row.full_name.match(/高三.*?(\d+).*?班/);
+                if (match) {
+                    existingNumbers.add(parseInt(match[1]));
+                }
+            }
+
+            // 动态确定班级数量
+            // 查询该届用户中最大的班级号
+            let maxClassNum = 20; // 默认最少20个班
+            try {
+                // 查找该届用户填写的班级信息
+                const [userClasses] = await db.query(
+                    'SELECT class_name FROM users WHERE graduation_year = ?',
+                    [year]
+                );
+
+                let maxUserClass = 0;
+                for (const u of userClasses) {
+                    if (!u.class_name) continue;
+                    // 尝试提取数字，例如 "高三15班" -> 15, "21" -> 21
+                    const match = u.class_name.match(/(\d+)/);
+                    if (match) {
+                        const num = parseInt(match[1]);
+                        if (!isNaN(num) && num > maxUserClass && num < 100) { // 排除异常大数值
+                            maxUserClass = num;
+                        }
+                    }
+                }
+
+                if (maxUserClass > maxClassNum) {
+                    maxClassNum = maxUserClass;
+                    console.log(`${year}届检测到最大班级号为 ${maxClassNum}，将扩展创建范围`);
+                }
+            } catch (e) {
+                console.error(`获取${year}届最大班级号失败:`, e);
+            }
+
+            // 创建班级
+            for (let i = 1; i <= maxClassNum; i++) {
+                // 如果该班号已存在，则跳过
+                if (existingNumbers.has(i)) {
+                    continue;
+                }
+
+                const className = `高三（${i}）班`; // 统一格式：高三（9）班
                 const fullName = `${year}届 ${className}`;
 
-                // 检查是否已存在
+                // 双重检查：虽然有了上面的逻辑，但保留全名精准匹配作为保险
                 const [existing] = await db.query('SELECT id FROM classes WHERE full_name = ?', [fullName]);
 
                 if (existing.length === 0) {
