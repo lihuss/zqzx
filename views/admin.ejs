@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理面板 - 肇中2025</title>
+    <title>管理面板 - 东湖畔 ZhaoHub</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <style>
@@ -469,9 +469,10 @@
                                 <div>
                                     <label class="form-label small mb-1">届</label>
                                     <select name="year" class="form-select">
-                                        <option value="2025" selected>2025届</option>
+                                        <option value="2025">2025届</option>
                                         <option value="2024">2024届</option>
                                         <option value="2026">2026届</option>
+                                        <option value="2027">2027届</option>
                                     </select>
                                 </div>
                                 <div class="flex-grow-1">
@@ -494,7 +495,7 @@
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <p class="text-muted small mb-0">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    系统会自动根据当前时间，为已升入高三的届次创建班级（2025届及以后）。
+                                    系统会自动根据当前时间，为已升入高三的届次创建班级。
                                 </p>
                                 <form action="/admin/check-auto-classes" method="POST">
                                     <button type="submit" class="btn-warm" style="background-color: #8b5cf6;">
@@ -604,7 +605,7 @@
                                                                     </small>
                                                 </div>
                                                 <small class="text-muted">举报人: <%= report.reporter_name || '匿名' %>
-                                                        </small>
+                                                </small>
                                             </div>
                                             <div class="report-preview">
                                                 <strong>被举报内容：</strong>

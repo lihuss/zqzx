@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= currentClass.full_name %> - 回忆录
+        <%= currentClass.full_name %> - 东湖畔
     </title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
@@ -44,8 +44,7 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="/profile"><i
-                                    class="fas fa-id-card me-2"></i>个人主页</a></li>
+                        <li><a class="dropdown-item" href="/profile"><i class="fas fa-id-card me-2"></i>个人主页</a></li>
                         <li>
                             <form action="/logout" method="POST">
                                 <button type="submit" class="dropdown-item text-danger">
@@ -77,10 +76,12 @@
                                 required></textarea>
                         </div>
                         <div class="mb-3">
-                            <input type="file" name="image" id="imageUpload" accept="image/*" multiple style="display: none;" onchange="handleFileSelect(this)">
+                            <input type="file" name="image" id="imageUpload" accept="image/*" multiple
+                                style="display: none;" onchange="handleFileSelect(this)">
                             <div class="d-flex flex-wrap gap-2" id="upload-grid">
                                 <!-- Previews -->
-                                <div class="upload-btn-wrapper" id="upload-btn-wrapper" onclick="document.getElementById('imageUpload').click()">
+                                <div class="upload-btn-wrapper" id="upload-btn-wrapper"
+                                    onclick="document.getElementById('imageUpload').click()">
                                     <div class="file-upload-box">
                                         <i class="fas fa-camera"></i>
                                     </div>
@@ -169,23 +170,17 @@
 
                                     <% if (post.image) { %>
                                         <div class="mt-2">
-                                            <% 
-                                                let images = [];
-                                                try {
-                                                    if (post.image && post.image.trim().startsWith('[')) {
-                                                        images = JSON.parse(post.image);
-                                                    } else {
-                                                        images = [post.image];
-                                                    }
-                                                } catch (e) { images = [post.image]; }
-                                            %>
-                                            <div class="image-grid" data-count="<%= images.length %>">
-                                                <% images.forEach(function(img) { %>
-                                                    <div class="image-item">
-                                                        <img src="<%= img %>" alt="帖子图片"  onclick="openImage(this.src)">
-                                                    </div>
-                                                <% }); %>
-                                            </div>
+                                            <% let images=[]; try { if (post.image && post.image.trim().startsWith('['))
+                                                { images=JSON.parse(post.image); } else { images=[post.image]; } } catch
+                                                (e) { images=[post.image]; } %>
+                                                <div class="image-grid" data-count="<%= images.length %>">
+                                                    <% images.forEach(function(img) { %>
+                                                        <div class="image-item">
+                                                            <img src="<%= img %>" alt="帖子图片"
+                                                                onclick="openImage(this.src)">
+                                                        </div>
+                                                        <% }); %>
+                                                </div>
                                         </div>
                                         <% } %>
 
@@ -268,10 +263,12 @@
             color: #64748b;
             background-color: #f8fafc;
         }
+
         .file-upload-box:hover {
             border-color: #f59e0b;
             color: #f59e0b;
         }
+
         .preview-item img {
             width: 60px;
             height: 60px;
@@ -305,78 +302,78 @@
                         btn.classList.add('liked');
                         icon.classList.remove('far');
                         icon.classList.add('fas');
-        const dt = new DataTransfer();
+                        const dt = new DataTransfer();
 
-        function handleFileSelect(input) {
-            const files = input.files;
-            
-            for (let i = 0; i < files.length; i++) {
-                let exists = false;
-                for(let j = 0; j < dt.files.length; j++) {
-                    if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists) {
-                    dt.items.add(files[i]);
-                }
-            }
+                        function handleFileSelect(input) {
+                            const files = input.files;
 
-            if (dt.files.length > 9) {
-                alert('最多只能上传 9 张图片，已保留前 9 张');
-                const newDt = new DataTransfer();
-                for (let i = 0; i < 9; i++) {
-                    newDt.items.add(dt.files[i]);
-                }
-                dt.items.clear();
-                for (let i = 0; i < newDt.files.length; i++) {
-                    dt.items.add(newDt.files[i]);
-                }
-            }
+                            for (let i = 0; i < files.length; i++) {
+                                let exists = false;
+                                for (let j = 0; j < dt.files.length; j++) {
+                                    if (dt.files[j].name === files[i].name && dt.files[j].size === files[i].size) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!exists) {
+                                    dt.items.add(files[i]);
+                                }
+                            }
 
-            input.files = dt.files;
+                            if (dt.files.length > 9) {
+                                alert('最多只能上传 9 张图片，已保留前 9 张');
+                                const newDt = new DataTransfer();
+                                for (let i = 0; i < 9; i++) {
+                                    newDt.items.add(dt.files[i]);
+                                }
+                                dt.items.clear();
+                                for (let i = 0; i < newDt.files.length; i++) {
+                                    dt.items.add(newDt.files[i]);
+                                }
+                            }
 
-            updatePreview();
-        }
+                            input.files = dt.files;
 
-        function updatePreview() {
-            const grid = document.getElementById('upload-grid');
-            const btnWrapper = document.getElementById('upload-btn-wrapper');
-            
-            const previews = grid.querySelectorAll('.preview-item');
-            previews.forEach(el => el.remove());
+                            updatePreview();
+                        }
 
-            Array.from(dt.files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item position-relative';
-                    
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'border rounded';
-                    
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center';
-                    btn.style.width = '16px';
-                    btn.style.height = '16px';
-                    btn.style.fontSize = '10px';
-                    btn.style.transform = 'translate(30%, -30%)';
-                    btn.style.borderRadius = '50%';
-                    btn.innerHTML = '&times;';
-                    btn.onclick = function(ev) {
-                        ev.stopPropagation(); 
-                        removeFile(index);
-                    };
+                        function updatePreview() {
+                            const grid = document.getElementById('upload-grid');
+                            const btnWrapper = document.getElementById('upload-btn-wrapper');
 
-                    div.appendChild(img);
-                    div.appendChild(btn);
-                    grid.insertBefore(div, btnWrapper);
-                }
-                reader.readAsDataURL(file);
-            });
+                            const previews = grid.querySelectorAll('.preview-item');
+                            previews.forEach(el => el.remove());
+
+                            Array.from(dt.files).forEach((file, index) => {
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    const div = document.createElement('div');
+                                    div.className = 'preview-item position-relative';
+
+                                    const img = document.createElement('img');
+                                    img.src = e.target.result;
+                                    img.className = 'border rounded';
+
+                                    const btn = document.createElement('button');
+                                    btn.type = 'button';
+                                    btn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center';
+                                    btn.style.width = '16px';
+                                    btn.style.height = '16px';
+                                    btn.style.fontSize = '10px';
+                                    btn.style.transform = 'translate(30%, -30%)';
+                                    btn.style.borderRadius = '50%';
+                                    btn.innerHTML = '&times;';
+                                    btn.onclick = function (ev) {
+                                        ev.stopPropagation();
+                                        removeFile(index);
+                                    };
+
+                                    div.appendChild(img);
+                                    div.appendChild(btn);
+                                    grid.insertBefore(div, btnWrapper);
+                                }
+                                reader.readAsDataURL(file);
+                            });
 
     <style>
         .preview-item {

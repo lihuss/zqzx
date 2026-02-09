@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>树洞 - 肇中2025</title>
+    <title>树洞 - 东湖畔</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/treehole-style.css">
@@ -16,8 +16,8 @@
     <nav class="warm-nav">
         <div class="container">
             <a href="/" class="nav-brand">
-                <img src="/images/logo.png" alt="校徽">
-                <span class="nav-brand-text d-none d-md-inline">肇中2025</span>
+                <img src="/images/icon.png" alt="校徽">
+                <span class="nav-brand-text d-none d-md-inline">东湖畔</span>
             </a>
 
             <!-- Tab 切换 -->
@@ -132,25 +132,18 @@
 
                                     <% if (post.image) { %>
                                         <div class="mt-2">
-                                            <% 
-                                                let images = [];
-                                                try {
-                                                    if (post.image.startsWith('[')) {
-                                                        images = JSON.parse(post.image);
-                                                    } else if (post.image) {
-                                                        images = [post.image];
-                                                    }
-                                                } catch (e) {
-                                                    images = post.image ? [post.image] : [];
-                                                }
-                                            %>
-                                            <div class="image-grid" data-count="<%= images.length %>">
-                                                <% images.forEach(function(img) { %>
-                                                    <div class="image-item">
-                                                        <img src="<%= img %>" alt="帖子图片" onclick="event.preventDefault(); window.open('<%= img %>')">
-                                                    </div>
-                                                <% }); %>
-                                            </div>
+                                            <% let images=[]; try { if (post.image.startsWith('[')) {
+                                                images=JSON.parse(post.image); } else if (post.image) {
+                                                images=[post.image]; } } catch (e) { images=post.image ? [post.image] :
+                                                []; } %>
+                                                <div class="image-grid" data-count="<%= images.length %>">
+                                                    <% images.forEach(function(img) { %>
+                                                        <div class="image-item">
+                                                            <img src="<%= img %>" alt="帖子图片"
+                                                                onclick="event.preventDefault(); window.open('<%= img %>')">
+                                                        </div>
+                                                        <% }); %>
+                                                </div>
                                         </div>
                                         <% } %>
                                 </a>

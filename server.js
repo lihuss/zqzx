@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // 配置 Session（Cookie 保持登录30天）
 app.use(session({
-    secret: 'zqzx2025-memory-secret-key',
+    secret: 'zhaohub-memory-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -612,7 +612,7 @@ app.post('/create-class', requireAuth, async (req, res) => {
     const className = req.body.className.trim();
     if (!className) return res.redirect('/hall');
 
-    const fullName = `2025届 ${className}`;
+    const fullName = `${res.locals.user.graduation_year}届 ${className}`;
 
     try {
         const [existing] = await db.query('SELECT * FROM classes WHERE full_name = ?', [fullName]);

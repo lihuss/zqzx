@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>问题详情 - 肇中2025</title>
+    <title>问题详情 - 东湖畔 ZhaoHub</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/treehole-style.css">
@@ -393,8 +393,9 @@
                     </div>
 
                     <div class="post-content"
-                        style="white-space: pre-wrap; margin-top: 0.5rem; padding-bottom: 0.25rem; font-size: 1.15rem; line-height: 1.6;"><%-
-                            post.content %></div>
+                        style="white-space: pre-wrap; margin-top: 0.5rem; padding-bottom: 0.25rem; font-size: 1.15rem; line-height: 1.6;">
+                        <%- post.content %>
+                    </div>
 
                     <% if (post.image) { %>
                         <div class="mt-2">
@@ -539,7 +540,10 @@
                                                         <button type="button" class="answer-action-btn"
                                                             onclick="toggleComments(<%= answer.id %>)">
                                                             <i class="far fa-comment"></i>
-                                                            <span><%= answer.reply_count ? '评论 ' + answer.reply_count : '评论' %></span>
+                                                            <span>
+                                                                <%= answer.reply_count ? '评论 ' + answer.reply_count
+                                                                    : '评论' %>
+                                                            </span>
                                                         </button>
 
                                                         <% if (user && user.id===answer.user_id) { %>

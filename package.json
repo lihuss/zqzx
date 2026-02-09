@@ -1,7 +1,7 @@
 {
-  "name": "zhaozhong-memory-2025",
+  "name": "zhaohub",
   "version": "1.0.0",
-  "description": "广东肇庆中学2025届回忆录",
+  "description": "东湖畔 | ZhaoHub - 广东肇庆中学社交平台",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
