@@ -411,9 +411,10 @@
                                     <strong>✅ 生成成功！</strong>
                                     <% newCodes.forEach(code=> { %>
                                         <code><%= code %></code>
-                                        <% }) %>
+                                        <% } %>
                                 </div>
-                                <% } %>
+                                <% }) %>
+                                    <% } %>
                         </div>
 
                         <div class="admin-card" style="border-color: #3b82f6;">
@@ -603,20 +604,6 @@
                                                                             Date(report.created_at).toLocaleString('zh-CN')
                                                                             %>
                                                                     </small>
-                                                                    <span class="badge bg-success ms-1"
-                                                                        style="font-size: 0.7rem; vertical-align: middle;">树洞</span>
-                                                                    <% } else if (report.type==='consultation' ) { %>
-                                                                        <span class="badge bg-primary ms-1"
-                                                                            style="font-size: 0.7rem; vertical-align: middle;">咨询</span>
-                                                                        <% } else { %>
-                                                                            <span class="badge bg-secondary ms-1"
-                                                                                style="font-size: 0.7rem; vertical-align: middle;">班级圈</span>
-                                                                            <% } %>
-                                                                                <small class="text-muted ms-2">
-                                                                                    <%= new
-                                                                                        Date(report.created_at).toLocaleString('zh-CN')
-                                                                                        %>
-                                                                                </small>
                                                 </div>
                                                 <small class="text-muted">举报人: <%= report.reporter_name || '匿名' %>
                                                 </small>
@@ -626,9 +613,6 @@
                                                 <p class="mb-0 mt-1">
                                                     <%= report.post_content ? report.post_content.substring(0, 200) +
                                                         (report.post_content.length> 200 ? '...' : '') : '内容已删除' %>
-                                                        <%= report.post_content ? report.post_content.substring(0, 200)
-                                                            + (report.post_content.length> 200 ? '...' : '') : '内容已删除'
-                                                            %>
                                                 </p>
                                             </div>
                                             <div class="d-flex gap-2 mt-3">
@@ -693,110 +677,66 @@
                                                                     <i class="fas fa-times me-1"></i>驳回举报
                                                                 </button>
                                                             </form>
-                                                            <% } %>
-                                                                <% } else if (report.type==='consultation' ) { %>
-                                                                    <a href="/consultation/<%= report.post_id %>"
-                                                                        class="btn btn-sm btn-outline-primary"
-                                                                        target="_blank">
-                                                                        <i class="fas fa-eye me-1"></i>查看详情
-                                                                    </a>
-                                                                    <form
-                                                                        action="/admin/report/consultation/<%= report.id %>/delete-post"
-                                                                        method="POST" class="d-inline">
-                                                                        <button type="submit" class="btn-warm red"
-                                                                            style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                                                            onclick="return confirm('确定删除该咨询内容吗？')">
-                                                                            <i class="fas fa-trash me-1"></i>删除内容
-                                                                        </button>
-                                                                    </form>
-                                                                    <form
-                                                                        action="/admin/report/consultation/<%= report.id %>/dismiss"
-                                                                        method="POST" class="d-inline">
-                                                                        <button type="submit"
-                                                                            class="btn btn-sm btn-outline-secondary">
-                                                                            <i class="fas fa-times me-1"></i>驳回举报
-                                                                        </button>
-                                                                    </form>
-                                                                    <% } else { %>
-                                                                        <a href="/class/<%= report.class_id %>"
-                                                                            class="btn btn-sm btn-outline-primary"
-                                                                            target="_blank">
-                                                                            <i class="fas fa-eye me-1"></i>查看帖子
-                                                                        </a>
-                                                                        <form
-                                                                            action="/admin/report/<%= report.id %>/delete-post"
-                                                                            method="POST" class="d-inline">
-                                                                            <button type="submit" class="btn-warm red"
-                                                                                style="font-size: 0.75rem; padding: 0.375rem 0.75rem;"
-                                                                                onclick="return confirm('确定删除该帖子吗？')">
-                                                                                <i class="fas fa-trash me-1"></i>删除帖子
-                                                                            </button>
-                                                                        </form>
-                                                                        <form
-                                                                            action="/admin/report/<%= report.id %>/dismiss"
-                                                                            method="POST" class="d-inline">
-                                                                            <button type="submit"
-                                                                                class="btn btn-sm btn-outline-secondary">
-                                                                                <i class="fas fa-times me-1"></i>驳回举报
-                                                                            </button>
-                                                                        </form>
-                                                                        <% } %>
                                             </div>
                                         </div>
                                         <% }) %>
-                                            <% }) %>
-                                                <% } %>
+                                            <% } %>
+
+                                                <% if (typeof reports !=='undefined' && reports.filter(r=> r.status !==
+                                                    'pending').length > 0) {
+                                                    %>
+                                                    <div class="admin-card" style="border-color: #94a3b8;">
+                                                        <div class="card-title">
+                                                            <i class="fas fa-history text-muted"></i>
+                                                            <span>历史记录</span>
+                                                        </div>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm mb-0">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>时间</th>
+                                                                        <th>状态</th>
+                                                                        <th>帖子ID</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <% reports.filter(r=> r.status !==
+                                                                        'pending').slice(0, 10).forEach(r => { %>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <%= new
+                                                                                    Date(r.created_at).toLocaleDateString('zh-CN')
+                                                                                    %>
+                                                                            </td>
+                                                                            <td><span
+                                                                                    class="status-badge <%= r.status === 'resolved' ? 'resolved' : 'dismissed' %>">
+                                                                                    <%= r.status==='resolved' ? '已处理'
+                                                                                        : '已驳回' %>
+                                                                                </span></td>
+                                                                            <td>
+                                                                                #<%= r.post_id %>
+                                                                                    <% if(r.type==='treehole' ) { %>
+                                                                                        <span class="badge bg-secondary"
+                                                                                            style="zoom: 0.8;">树洞</span>
+                                                                                        <% } else { %>
+                                                                                            <span
+                                                                                                class="badge bg-light text-dark"
+                                                                                                style="zoom: 0.8;">班级</span>
+                                                                                            <% } %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }) %>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <% } %>
                         </div>
-
-                        <% if (typeof reports !=='undefined' && reports.filter(r=> r.status !== 'pending').length > 0) {
-                            %>
-                            <div class="admin-card" style="border-color: #94a3b8;">
-                                <div class="card-title">
-                                    <i class="fas fa-history text-muted"></i>
-                                    <span>历史记录</span>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-sm mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>时间</th>
-                                                <th>状态</th>
-                                                <th>帖子ID</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% reports.filter(r=> r.status !== 'pending').slice(0, 10).forEach(r => { %>
-                                                <tr>
-                                                    <td>
-                                                        <%= new Date(r.created_at).toLocaleDateString('zh-CN') %>
-                                                    </td>
-                                                    <td><span
-                                                            class="status-badge <%= r.status === 'resolved' ? 'resolved' : 'dismissed' %>">
-                                                            <%= r.status==='resolved' ? '已处理' : '已驳回' %>
-                                                        </span></td>
-                                                    <td>
-                                                        #<%= r.post_id %>
-                                                            <% if(r.type==='treehole' ) { %>
-                                                                <span class="badge bg-secondary"
-                                                                    style="zoom: 0.8;">树洞</span>
-                                                                <% } else { %>
-                                                                    <span class="badge bg-light text-dark"
-                                                                        style="zoom: 0.8;">班级</span>
-                                                                    <% } %>
-                                                    </td>
-                                                </tr>
-                                                <% }) %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <% } %>
                     </div>
+                    <% } %>
                 </div>
-                <% } %>
-    </div>
 
-    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+                <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

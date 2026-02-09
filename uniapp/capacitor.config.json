@@ -1,0 +1,9 @@
+{
+  "appId": "com.zhaohub.app",
+  "appName": "ZhaoHub",
+  "webDir": "dist/build/h5",
+  "server": {
+    "url": "http://112.74.54.5:3000",
+    "cleartext": true
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ZhaoHub</string>
+    <string name="title_activity_main">ZhaoHub</string>
+    <string name="package_name">com.zhaohub.app</string>
+    <string name="custom_url_scheme">com.zhaohub.app</string>
+</resources>
