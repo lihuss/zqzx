@@ -93,10 +93,15 @@
                             快来这挖个洞，分享你的秘密吧...
                         </div>
                         <div class="publish-actions d-none d-sm-flex">
-                            <button class="publish-action-item action-idea" onclick="expandPublish()">
+                            <button class="publish-action-item action-idea" onclick="expandPublish()" id="ideaBtn">
                                 <i class="fas fa-feather"></i>
                                 <span>发想法</span>
                             </button>
+                            <!-- 展开后显示的静态文本 -->
+                            <span class="publish-action-item action-idea d-none" id="ideaStatic" style="pointer-events: none; opacity: 1; color: var(--color-primary); font-weight: bold;">
+                                <i class="fas fa-feather"></i>
+                                <span>发想法</span>
+                            </span>
                         </div>
                     </div>
 
@@ -255,6 +260,8 @@
 
         function expandPublish() {
             publishCard.classList.add('active');
+            document.getElementById('ideaBtn').classList.add('d-none');
+            document.getElementById('ideaStatic').classList.remove('d-none');
             publishCard.querySelector('textarea').focus();
         }
 
@@ -263,6 +270,8 @@
                 if (!confirm('确定放弃正在编辑的内容吗？')) return;
             }
             publishCard.classList.remove('active');
+            document.getElementById('ideaBtn').classList.remove('d-none');
+            document.getElementById('ideaStatic').classList.add('d-none');
             publishCard.querySelector('textarea').value = '';
             qDt.items.clear();
             updateQuickPreview();

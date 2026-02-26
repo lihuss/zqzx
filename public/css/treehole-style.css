@@ -291,6 +291,14 @@ body {
     display: none;
 }
 
+.publish-card.active #ideaBtn {
+    display: none !important;
+}
+
+.publish-card.active #ideaStatic {
+    display: inline-flex !important;
+}
+
 .quick-post-textarea {
     width: 100%;
     border: none;
