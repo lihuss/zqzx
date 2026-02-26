@@ -11,27 +11,28 @@
     <link rel="stylesheet" href="/css/image-grid.css">
     <style>
         .market-card {
-            background: #fff;
+            background: var(--color-bg-main);
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 20px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
             display: flex;
             flex-direction: column;
+            border: 1px solid var(--color-border);
         }
 
         .market-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-md);
         }
 
         .market-img-container {
             width: 100%;
             padding-top: 75%; /* 4:3 Aspect Ratio */
             position: relative;
-            background-color: #f8f9fa;
+            background-color: var(--color-bg-soft);
             overflow: hidden;
         }
 
@@ -53,9 +54,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ccc;
+            color: var(--text-muted);
             font-size: 3rem;
-            background-color: #f1f3f5;
+            background-color: var(--color-bg-soft);
         }
 
         .market-body {
@@ -69,7 +70,7 @@
             font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--color-text-main);
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -78,19 +79,20 @@
         }
 
         .market-price {
-            color: #e65100;
+            color: var(--color-accent); /* use red accent */
             font-weight: 700;
             font-size: 1.2rem;
             margin-bottom: 8px;
         }
         
         .market-price-free {
-            color: #28a745;
+            color: #10b981; /* emerald/green for free is okay or we could use blue? Let's use blue to keep set-consistent */
+            color: var(--color-primary);
         }
 
         .market-meta {
             font-size: 0.85rem;
-            color: #888;
+            color: var(--text-secondary);
             margin-top: auto;
             display: flex;
             justify-content: space-between;
@@ -98,12 +100,12 @@
         }
         
         .contact-info-box {
-            background: #f8f9fa;
+            background: var(--color-bg-soft);
             border-radius: 6px;
             padding: 8px 12px;
             margin-top: 10px;
             font-size: 0.9rem;
-            border-left: 3px solid #e65100;
+            border-left: 3px solid var(--color-accent);
         }
         
         .badge-status {
@@ -118,17 +120,17 @@
         }
         
         .status-sold {
-            background-color: rgba(108, 117, 125, 0.9);
+            background-color: rgba(75, 85, 99, 0.9);
             color: white;
         }
         
         .status-active {
-            background-color: rgba(40, 167, 69, 0.9);
+            background-color: rgba(30, 58, 138, 0.9);
             color: white;
         }
 
         .market-header {
-            background: linear-gradient(120deg, #ff9f43, #ff6b6b);
+            background: linear-gradient(120deg, var(--color-primary), #3b82f6);
             color: white;
             padding: 40px 0;
             margin-bottom: 30px;
@@ -164,7 +166,7 @@
     </style>
 </head>
 
-<body>
+<body class="theme-market">
     <!-- 顶部导航 -->
     <nav class="warm-nav">
         <div class="container">
@@ -176,19 +178,15 @@
             <!-- Tab 切换 -->
             <div class="nav-tabs-wrapper">
                 <a href="/treehole" class="nav-tab">
-                    <i class="fas fa-tree"></i>
                     <span>树洞</span>
                 </a>
                 <a href="/consultation" class="nav-tab">
-                    <i class="fas fa-question-circle"></i>
-                    <span>咨询专区</span>
+                    <span>咨询</span>
                 </a>
                 <a href="/market" class="nav-tab active">
-                    <i class="fas fa-store"></i>
                     <span>集市</span>
                 </a>
                 <a href="/hall" class="nav-tab">
-                    <i class="fas fa-book-open"></i>
                     <span>回忆录</span>
                 </a>
             </div>
@@ -238,17 +236,26 @@
     </nav>
 
     <div class="container py-4">
-        <!-- 头部区域 -->
-        <div class="market-header">
-            <h2><i class="fas fa-store me-2"></i>校园集市</h2>
-            <p class="mb-0">免费交易，互通有无，留下联系方式即可</p>
-        </div>
-        
-        <div class="market-action-bar">
-            <strong>目前共有 <%= items.length %> 件商品正在展示</strong>
-            <a href="/market/new" class="btn btn-warning text-white">
-                <i class="fas fa-plus me-1"></i> 发布商品
-            </a>
+        <!-- 发布卡片 -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="publish-card">
+                    <div class="publish-header">
+                        <div class="publish-avatar">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="publish-text text-muted ms-2 d-none d-md-block">
+                            目前共有 <strong><%= items.length %></strong> 件商品正在展示
+                        </div>
+                        <div class="publish-actions ms-auto">
+                            <a href="/market/new" class="publish-action-item action-ask" style="background: var(--color-primary); color: white; padding: 0.5rem 1.25rem; border-radius: 999px;">
+                                <i class="fas fa-plus"></i>
+                                <span>发布闲置</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-4">
@@ -322,6 +329,10 @@
         </div>
     </div>
     
+    <footer class="app-footer">
+        <p>© 2026 东湖畔 ZhaoHub · 肇中校友平台</p>
+    </footer>
+
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

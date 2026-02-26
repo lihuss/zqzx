@@ -11,19 +11,19 @@
     <link rel="stylesheet" href="/css/image-grid.css">
     <style>
         :root {
-            --consultation-primary: #3b82f6;
-            --consultation-dark: #2563eb;
-            --consultation-light: #eff6ff;
+            --consultation-primary: var(--color-primary);
+            --consultation-dark: #172554;
+            --consultation-light: var(--color-bg-soft);
         }
 
         .consultation-header::before {
-            background: linear-gradient(90deg, var(--consultation-dark), var(--consultation-primary), #60a5fa);
+            background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
         }
 
         .btn-consultation {
-            background: linear-gradient(135deg, var(--consultation-primary), var(--consultation-dark));
+            background: linear-gradient(135deg, var(--color-primary), var(--consultation-dark));
             color: white;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);
             border: none;
             border-radius: 1rem;
             padding: 0.75rem 1.5rem;
@@ -32,13 +32,13 @@
 
         .btn-consultation:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3);
             color: white;
         }
 
         .nav-tab.active-consultation {
             background: white;
-            color: var(--consultation-primary);
+            color: var(--color-primary);
             box-shadow: var(--shadow-sm);
         }
 
@@ -46,8 +46,8 @@
             width: 60px;
             height: 60px;
             font-size: 2.5rem;
-            background: var(--consultation-light);
-            color: var(--consultation-primary);
+            background: var(--color-bg-soft);
+            color: var(--color-primary);
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
@@ -62,13 +62,13 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--consultation-primary), var(--consultation-dark));
+            background: linear-gradient(135deg, var(--color-primary), var(--consultation-dark));
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
             z-index: 1000;
             transition: all 0.3s ease;
             text-decoration: none;
@@ -76,7 +76,7 @@
 
         .btn-consultation-float:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.5);
             color: white;
         }
 
@@ -111,11 +111,11 @@
 
         /* 回答预览区 */
         .answer-preview {
-            background: #f8fafc;
+            background: var(--color-bg-soft);
             border-radius: 0.75rem;
             padding: 1rem;
             margin-top: 0.75rem;
-            border-left: 3px solid var(--consultation-primary);
+            border-left: 3px solid var(--color-primary);
         }
 
         .answer-preview-header {
@@ -196,7 +196,7 @@
     </style>
 </head>
 
-<body>
+<body class="theme-consultation">
     <!-- 顶部导航 -->
     <nav class="warm-nav">
         <div class="container">
@@ -208,19 +208,15 @@
             <!-- Tab 切换 -->
             <div class="nav-tabs-wrapper">
                 <a href="/treehole" class="nav-tab">
-                    <i class="fas fa-tree"></i>
                     <span>树洞</span>
                 </a>
                 <a href="/consultation" class="nav-tab active">
-                    <i class="fas fa-question-circle"></i>
-                    <span>咨询专区</span>
+                    <span>咨询</span>
                 </a>
                 <a href="/market" class="nav-tab">
-                    <i class="fas fa-store"></i>
                     <span>集市</span>
                 </a>
                 <a href="/hall" class="nav-tab">
-                    <i class="fas fa-book-open"></i>
                     <span>回忆录</span>
                 </a>
             </div>
@@ -269,21 +265,32 @@
     </nav>
 
     <div class="container py-4">
-        <!-- 头部区域 -->
-        <div class="treehole-header consultation-header">
-            <div class="header-icon-consultation"><i class="fas fa-comments"></i></div>
-            <h2>咨询专区</h2>
-            <p>求助问答，经验分享，互助成长</p>
+        <!-- 发布卡片 -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="publish-card">
+                    <div class="publish-header">
+                        <div class="publish-avatar">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="publish-actions ms-2">
+                            <a href="/consultation/new?mode=question" class="publish-action-item action-ask" style="font-size: 1.1rem; font-weight: 600;">
+                                <i class="fas fa-question-circle"></i>
+                                <span>提问</span>
+                            </a>
+                            <a href="/consultation/new?mode=article" class="publish-action-item action-article" style="font-size: 1.1rem; font-weight: 600; margin-left: 1.5rem;">
+                                <i class="fas fa-pen-nib"></i>
+                                <span>写文章</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row justify-content-center">
             <!-- 帖子流 -->
             <div class="col-lg-8 col-md-10">
-                <!-- 悬浮提问按钮 -->
-                <a href="/consultation/new" class="btn-consultation-float" title="我要提问">
-                    <i class="fas fa-plus"></i>
-                </a>
-
                 <% if (posts.length===0) { %>
                     <div class="treehole-card empty-state">
                         <i class="fas fa-question-circle" style="color: #bfdbfe;"></i>
@@ -463,6 +470,10 @@
     </footer>
 
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <footer class="app-footer">
+        <p>© 2026 东湖畔 ZhaoHub · 肇中校友平台</p>
+    </footer>
+
     <script>
         // 展开/收起回答
         function toggleAnswer(postId) {

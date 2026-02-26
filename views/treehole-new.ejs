@@ -14,15 +14,25 @@
     <!-- 顶部导航 -->
     <nav class="warm-nav">
         <div class="container">
-            <a href="/treehole" class="btn-warm-outline">
-                <i class="fas fa-arrow-left"></i>
-                <span>返回树洞</span>
+            <a href="/" class="nav-brand">
+                <img src="/images/icon.png" alt="校徽">
+                <span class="nav-brand-text d-none d-md-inline">东湖畔</span>
             </a>
-            <div class="nav-brand">
-                <div class="nav-brand-icon">
-                    <i class="fas fa-tree"></i>
-                </div>
-                <span class="nav-brand-text">挖一个新洞</span>
+
+            <!-- Tab 切换 -->
+            <div class="nav-tabs-wrapper">
+                <a href="/treehole" class="nav-tab active">
+                    <span>树洞</span>
+                </a>
+                <a href="/consultation" class="nav-tab">
+                    <span>咨询</span>
+                </a>
+                <a href="/market" class="nav-tab">
+                    <span>集市</span>
+                </a>
+                <a href="/hall" class="nav-tab">
+                    <span>回忆录</span>
+                </a>
             </div>
             <span></span>
         </div>
@@ -200,22 +210,22 @@
         .file-upload-box {
             width: 100px;
             height: 100px;
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed var(--color-border);
             border-radius: 0.75rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            color: #64748b;
-            background-color: #f8fafc;
+            color: var(--text-secondary);
+            background-color: var(--color-bg-soft);
             transition: all 0.2s;
         }
 
         .file-upload-box:hover {
-            border-color: var(--treehole-primary, #059669);
-            color: var(--treehole-primary, #059669);
-            background-color: #f0fdf4;
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background-color: white;
         }
 
         .file-upload-box i {

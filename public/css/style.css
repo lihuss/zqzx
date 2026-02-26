@@ -1,13 +1,21 @@
-/* 全局变量：定义肇中风格颜色 */
+/* Global Design Tokens */
 :root {
-    --zz-green: #2e7d32; /* 类似校徽的绿色 */
-    --zz-green-light: #e8f5e9;
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.6);
+    --color-primary: #1e3a8a; /* deep navy blue */
+    --color-accent: #b91c1c;  /* muted campus red */
+    --color-bg-main: #ffffff; /* white */
+    --color-bg-soft: #f3f4f6; /* light gray */
+    --color-text-main: #111827; /* near black */
+    --color-border: #e5e7eb;  /* subtle gray */
+
+    /* Glass effect variables (using new colors) */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.4);
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--color-text-main);
+    background-color: var(--color-bg-main);
 }
 
 /* 封面页样式 */
@@ -25,7 +33,7 @@ body {
 .overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(46, 125, 50, 0.3); /* 绿色遮罩，让文字更清晰 */
+    background: rgba(30, 58, 138, 0.4); /* Navy blue overlay with 40% opacity */
 }
 
 .content-center {

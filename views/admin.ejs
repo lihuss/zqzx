@@ -9,19 +9,22 @@
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #f59e0b;
-            --cork: #d97706;
-            --warm-bg: #fcfaf7;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-light: #f1f5f9;
+            --color-primary: #1e3a8a;
+            --color-accent: #b91c1c;
+            --color-bg-main: #ffffff;
+            --color-bg-soft: #f3f4f6;
+            --color-text-main: #111827;
+            --color-border: #e5e7eb;
+            --primary: var(--color-primary);
+            --cork: #172554;
+            --text-primary: var(--color-text-main);
+            --text-secondary: #4b5563;
         }
 
         body {
             font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--warm-bg);
-            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+            background-color: var(--color-bg-soft);
+            background-image: none;
             min-height: 100vh;
             color: var(--text-primary);
             padding-top: 70px;
@@ -37,7 +40,7 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+            border-bottom: 1px solid var(--color-border);
             z-index: 1030;
             display: flex;
             align-items: center;

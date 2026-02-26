@@ -14,21 +14,22 @@
             border-radius: 8px;
             max-height: 500px;
             object-fit: contain;
-            background-color: #f8f9fa;
+            background-color: var(--color-bg-soft);
         }
         
         .price-tag {
             font-size: 1.5rem;
-            color: #e65100;
+            color: var(--color-accent);
             font-weight: bold;
         }
         
         .contact-box {
-            background-color: #fff3e0;
-            border: 1px solid #ffe0b2;
+            background-color: var(--color-bg-soft);
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
+            border-left: 4px solid var(--color-primary);
         }
         
         .item-status-badge {
@@ -39,7 +40,7 @@
     </style>
 </head>
 
-<body>
+<body class="theme-market">
     <nav class="warm-nav">
         <div class="container">
             <a href="/" class="nav-brand">
@@ -48,19 +49,15 @@
             </a>
             <div class="nav-tabs-wrapper">
                 <a href="/treehole" class="nav-tab">
-                    <i class="fas fa-tree"></i>
                     <span>树洞</span>
                 </a>
                 <a href="/consultation" class="nav-tab">
-                    <i class="fas fa-question-circle"></i>
-                    <span>咨询专区</span>
+                    <span>咨询</span>
                 </a>
                 <a href="/market" class="nav-tab active">
-                    <i class="fas fa-store"></i>
                     <span>集市</span>
                 </a>
                 <a href="/hall" class="nav-tab">
-                    <i class="fas fa-book-open"></i>
                     <span>回忆录</span>
                 </a>
             </div>

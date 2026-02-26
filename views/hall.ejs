@@ -7,117 +7,27 @@
     <title>班级大厅 - 东湖畔 ZhaoHub</title>
     <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/lib/fontawesome/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/treehole-style.css">
     <style>
         :root {
-            --primary: #f59e0b;
-            --cork: #d97706;
-            --warm-bg: #fcfaf7;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-light: #f1f5f9;
+            --color-primary: #1e3a8a;
+            --color-accent: #b91c1c;
+            --color-bg-main: #ffffff;
+            --color-bg-soft: #f3f4f6;
+            --color-text-main: #111827;
+            --color-border: #e5e7eb;
+            --text-primary: var(--color-text-main);
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
         }
 
         body {
             font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--warm-bg);
-            background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+            background-color: var(--color-bg-soft);
+            background-image: none;
             min-height: 100vh;
             color: var(--text-primary);
             padding-top: 70px;
-        }
-
-        /* 顶部导航 */
-        .warm-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(241, 245, 249, 0.8);
-            z-index: 1030;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-        }
-
-        .nav-brand img {
-            height: 36px;
-        }
-
-        .nav-brand-text {
-            font-size: 1.125rem;
-            font-weight: 800;
-            color: var(--cork);
-        }
-
-        .btn-warm-outline {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-warm-outline:hover {
-            border-color: var(--cork);
-            color: var(--cork);
-            background: #fef3c7;
-        }
-
-        /* 头部区域 */
-        .hall-header {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        }
-
-        .hall-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--cork), #f59e0b, #fbbf24);
-        }
-
-        .hall-header img {
-            height: 60px;
-            margin-bottom: 1rem;
-        }
-
-        .hall-header h2 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .hall-header p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
         }
 
         /* 班级卡片 */
@@ -148,7 +58,7 @@
 
         .class-card:hover {
             transform: translateY(-4px);
-            border-color: var(--primary);
+            border-color: var(--color-primary);
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
         }
 
@@ -180,74 +90,6 @@
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.5;
-        }
-
-        /* 下拉菜单 */
-        .dropdown-menu {
-            border-radius: 1rem;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem;
-        }
-
-        .dropdown-item {
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-        }
-
-        .dropdown-item:hover {
-            background: #fef3c7;
-        }
-
-        .dropdown-item i {
-            width: 1.25rem;
-        }
-
-        /* 页脚 */
-        .hall-footer {
-            text-align: center;
-            padding: 2rem 0;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        /* Tab 切换 */
-        .nav-tabs-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: #f1f5f9;
-            border-radius: 9999px;
-            padding: 0.25rem;
-        }
-
-        .nav-tab {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .nav-tab:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .nav-tab.active {
-            background: white;
-            color: var(--cork);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-tab i {
-            font-size: 0.875rem;
         }
 
         @media (max-width: 768px) {
@@ -303,7 +145,7 @@
     </style>
 </head>
 
-<body>
+<body class="theme-memoir">
     <!-- 顶部导航栏 -->
     <nav class="warm-nav">
         <div class="container d-flex justify-content-between align-items-center">
@@ -315,19 +157,15 @@
             <!-- Tab 切换 -->
             <div class="nav-tabs-wrapper">
                 <a href="/treehole" class="nav-tab">
-                    <i class="fas fa-tree"></i>
                     <span>树洞</span>
                 </a>
                 <a href="/consultation" class="nav-tab">
-                    <i class="fas fa-question-circle"></i>
-                    <span>咨询专区</span>
+                    <span>咨询</span>
                 </a>
                 <a href="/market" class="nav-tab">
-                    <i class="fas fa-store"></i>
                     <span>集市</span>
                 </a>
                 <a href="/hall" class="nav-tab active">
-                    <i class="fas fa-book-open"></i>
                     <span>回忆录</span>
                 </a>
             </div>
@@ -381,11 +219,10 @@
     </nav>
 
     <div class="container py-4">
-        <!-- 头部区域 -->
-        <div class="hall-header">
-            <img src="/images/icon.png" alt="校徽">
-            <h2>班级大厅</h2>
-            <p>找到属于你的集体，留下青春的足迹</p>
+        <!-- 页面标题 -->
+        <div class="mb-4 text-center">
+            <h2 class="fw-bold" style="color: var(--color-primary);">班级大厅</h2>
+            <p class="text-muted">找到属于你的集体，留下青春的足迹</p>
         </div>
 
         <!-- 班级列表 -->
@@ -415,9 +252,9 @@
         </div>
 
         <!-- 页脚 -->
-        <div class="hall-footer">
-            <p>© 东湖畔 ZhaoHub · 肇中校友平台</p>
-        </div>
+        <footer class="app-footer">
+            <p>© 2026 东湖畔 ZhaoHub · 肇中校友平台</p>
+        </footer>
     </div>
 
     <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>

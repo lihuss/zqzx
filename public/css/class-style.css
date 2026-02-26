@@ -2,27 +2,27 @@
 
 /* ========== 颜色变量 ========== */
 :root {
-    --primary: #f59e0b;
-    --cork: #d97706;
-    --warm-bg: #fcfaf7;
-    --warm-yellow: #fdf8ef;
-    --soft-green: #f0f7e9;
-    --soft-blue: #eff6ff;
-    --accent-pink: #fff1f2;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-muted: #94a3b8;
-    --border-light: #f1f5f9;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 2px 4px 12px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 4px 8px 20px rgba(0, 0, 0, 0.06);
+    --color-primary: #1e3a8a; /* deep navy blue */
+    --color-accent: #b91c1c;  /* muted campus red */
+    --color-bg-main: #ffffff; /* white */
+    --color-bg-soft: #f3f4f6; /* light gray */
+    --color-text-main: #111827; /* near black */
+    --color-border: #e5e7eb;  /* subtle gray */
+
+    --primary: var(--color-primary);
+    --cork: #172554;
+    --warm-bg: var(--color-bg-soft);
+    --text-primary: var(--color-text-main);
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --border-light: var(--color-border);
 }
 
 /* ========== 全局样式 ========== */
 .class-page {
     font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--warm-bg);
-    background-image: repeating-linear-gradient(45deg, rgba(217, 119, 6, 0.02) 0px, rgba(217, 119, 6, 0.02) 2px, transparent 2px, transparent 4px);
+    background-image: none;
     min-height: 100vh;
     color: var(--text-primary);
     padding-top: 70px;
