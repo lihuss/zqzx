@@ -87,12 +87,25 @@
 <body>
     <nav class="warm-nav">
         <div class="container">
-            <a href="/consultation/<%= question.id %>" class="btn-warm-outline">
-                <i class="fas fa-arrow-left"></i>
-                <span>返回问题</span>
+            <a href="/" class="nav-brand">
+                <img src="/images/icon.png" alt="校徽">
+                <span class="nav-brand-text d-none d-md-inline">东湖畔</span>
             </a>
-            <div class="nav-brand">
-                <span class="nav-brand-text">编辑回答</span>
+
+            <!-- Tab 切换 -->
+            <div class="nav-tabs-wrapper">
+                <a href="/treehole" class="nav-tab">
+                    <span>树洞</span>
+                </a>
+                <a href="/consultation" class="nav-tab active">
+                    <span>咨询</span>
+                </a>
+                <a href="/market" class="nav-tab">
+                    <span>集市</span>
+                </a>
+                <a href="/hall" class="nav-tab">
+                    <span>回忆录</span>
+                </a>
             </div>
             <div style="width: 100px;"></div>
         </div>

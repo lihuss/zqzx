@@ -12,20 +12,31 @@
     <link rel="stylesheet" href="/css/image-grid.css">
 </head>
 
-<body>
+<body class="theme-treehole">
     <!-- 顶部导航 -->
     <nav class="warm-nav">
         <div class="container">
-            <a href="/treehole" class="btn-warm-outline">
-                <i class="fas fa-arrow-left"></i>
-                <span>返回树洞</span>
+            <a href="/" class="nav-brand">
+                <img src="/images/icon.png" alt="校徽">
+                <span class="nav-brand-text d-none d-md-inline">东湖畔</span>
             </a>
-            <div class="nav-brand">
-                <div class="nav-brand-icon">
-                    <i class="fas fa-tree"></i>
-                </div>
-                <span class="nav-brand-text">树洞 #<%= post.id %></span>
+
+            <!-- Tab 切换 -->
+            <div class="nav-tabs-wrapper">
+                <a href="/treehole" class="nav-tab active">
+                    <span>树洞</span>
+                </a>
+                <a href="/consultation" class="nav-tab">
+                    <span>咨询</span>
+                </a>
+                <a href="/market" class="nav-tab">
+                    <span>集市</span>
+                </a>
+                <a href="/hall" class="nav-tab">
+                    <span>回忆录</span>
+                </a>
             </div>
+
             <% if (user) { %>
                 <div class="dropdown">
                     <button class="btn-warm-outline dropdown-toggle" type="button" data-bs-toggle="dropdown">
